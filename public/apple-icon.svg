@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <rect width="180" height="180" rx="40" fill="#02090d"/>
+  <defs>
+    <linearGradient id="qs-apple-mark" x1="36" y1="40" x2="144" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7af0d0"/>
+      <stop offset="0.55" stop-color="#36b8a6"/>
+      <stop offset="1" stop-color="#5ec8d8"/>
+    </linearGradient>
+    <linearGradient id="qs-apple-gold" x1="60" y1="60" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0d78c"/>
+      <stop offset="1" stop-color="#c9a227"/>
+    </linearGradient>
+  </defs>
+  <circle cx="90" cy="90" r="52" stroke="url(#qs-apple-mark)" stroke-width="10"/>
+  <circle cx="90" cy="90" r="40" stroke="url(#qs-apple-gold)" stroke-width="5" opacity="0.85"/>
+  <path d="M72 74 C66 80 63 87 63 95 C63 112 76 124 93 124 C101 124 108 120 114 114" stroke="url(#qs-apple-mark)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M116 116 L124 124" stroke="url(#qs-apple-mark)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M80 72 H104 C111 72 116 77 116 84 C116 90 112 95 106 96 L116 112" stroke="url(#qs-apple-mark)" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

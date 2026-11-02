@@ -1,0 +1,192 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+
+export type SiteHeaderLink = {
+  href: string;
+  label: string;
+};
+
+export type SiteHeaderStatus = {
+  tone: "ok" | "warn" | "pending";
+  label: string;
+};
+
+type SiteHeaderProps = {
+  links: SiteHeaderLink[];
+  status: SiteHeaderStatus;
+  ctaHref?: string;
+  ctaLabel?: string;
+  homeHref?: string;
+  activeHref?: string;
+};
+
+const statusDot: Record<SiteHeaderStatus["tone"], string> = {
+  ok: "bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.7)]",
+  warn: "bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.6)]",
+  pending: "bg-slate-500 animate-pulse",
+};
+
+const menuItem =
+  "flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-left text-[0.84rem] text-slate-200 transition-colors hover:bg-white/5 hover:text-white";
+
+function useOutsideClose(open: boolean, close: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: PointerEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) close();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, close]);
+  return ref;
+}
+
+export function SiteHeader({
+  links,
+  status,
+  ctaHref = "#mandate",
+  ctaLabel = "Seal a mandate",
+  homeHref = "#top",
+  activeHref,
+}: SiteHeaderProps) {
+  const [scrolled, setScrolled] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const navRef = useOutsideClose(navOpen, () => setNavOpen(false));
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 md:px-6">
+      <div
+        className={`mx-auto flex h-14 max-w-[1052px] items-center gap-2 rounded-2xl border px-2.5 transition-all duration-300 sm:h-[3.75rem] sm:gap-3 sm:px-3 ${
+          scrolled
+            ? "border-cyan-100/18 bg-[#031016]/72 shadow-[0_14px_50px_rgba(0,0,0,0.34)] backdrop-blur-2xl"
+            : "border-cyan-100/12 bg-[#031016]/38 shadow-[0_8px_30px_rgba(0,0,0,0.16)] backdrop-blur-lg"
+        }`}
+      >
+        <Link
+          href={homeHref}
+          className="flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+        >
+          <QuoteSealMark className="h-8 w-8" />
+          <span className="hidden text-lg font-semibold tracking-[-0.03em] text-white min-[400px]:inline">
+            QuoteSeal
+          </span>
+        </Link>
+
+        <nav
+          className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 md:flex"
+          aria-label="Primary"
+        >
+          {links.map((link) => {
+            const active = activeHref != null && link.href === activeHref;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 ${
+                  active
+                    ? "bg-white/8 text-white"
+                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0">
+          <span
+            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[0.68rem] text-slate-400 lg:inline-flex"
+            title={status.label}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${statusDot[status.tone]}`} />
+            {status.label}
+          </span>
+
+          <Link
+            href={ctaHref}
+            className="qs-btn-primary hidden min-h-10 items-center rounded-xl px-3.5 py-2 font-mono text-[0.74rem] font-medium sm:inline-flex sm:px-4"
+          >
+            {ctaLabel}
+          </Link>
+
+          <div ref={navRef} className="relative md:hidden">
+            <button
+              type="button"
+              onClick={() => setNavOpen((v) => !v)}
+              aria-label={navOpen ? "Close menu" : "Open menu"}
+              aria-expanded={navOpen}
+              className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-slate-200 touch-manipulation"
+            >
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
+                {navOpen ? (
+                  <path
+                    d="M3.5 3.5 L12.5 12.5 M12.5 3.5 L3.5 12.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                ) : (
+                  <path
+                    d="M2.5 4.5 H13.5 M2.5 8 H13.5 M2.5 11.5 H13.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                )}
+              </svg>
+            </button>
+            {navOpen ? (
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] w-56 rounded-xl border border-emerald-200/20 bg-[#06171e]/97 p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                {links.map((link) => {
+                  const active = activeHref != null && link.href === activeHref;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      aria-current={active ? "page" : undefined}
+                      className={`${menuItem} ${active ? "bg-white/5 text-white" : ""}`}
+                      onClick={() => setNavOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+                <Link
+                  href={ctaHref}
+                  className={`${menuItem} text-emerald-200`}
+                  onClick={() => setNavOpen(false)}
+                >
+                  {ctaLabel}
+                </Link>
+                <p className="m-0 flex items-center gap-2 px-3 py-2 font-mono text-[0.68rem] text-slate-500">
+                  <span className={`h-1.5 w-1.5 rounded-full ${statusDot[status.tone]}`} />
+                  {status.label}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
