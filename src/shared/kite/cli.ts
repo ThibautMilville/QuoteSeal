@@ -16,7 +16,8 @@ const CANDIDATES = [
   "kpass",
 ].filter(Boolean) as string[];
 
-const CONNECT_URL = "https://docs.gokite.ai";
+/** Passport web login / dashboard - not generic docs. */
+const CONNECT_URL = "https://agentpassport.ai/dashboard";
 
 function publishedIdentity(): {
   agentId: string | null;

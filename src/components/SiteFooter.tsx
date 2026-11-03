@@ -13,7 +13,7 @@ const STACK = [
     showLabel: false,
   },
   {
-    href: "https://docs.gokite.ai",
+    href: "https://agentpassport.ai/",
     label: "Kite Passport",
     markSrc: "/partners/kite-mark.svg",
     markAlt: "Kite mark",

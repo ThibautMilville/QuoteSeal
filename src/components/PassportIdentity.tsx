@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { KiteStatus } from "@/shared/kite/types";
 
 type LoadState = "loading" | "ready" | "error";
@@ -11,6 +11,11 @@ type SessionCreateState =
   | { kind: "ready"; approvalUrl: string | null; detail: string }
   | { kind: "fallback"; detail: string }
   | { kind: "error"; detail: string };
+
+const PASSPORT_DASHBOARD = "https://agentpassport.ai/dashboard";
+const PASSPORT_HOME = "https://agentpassport.ai/";
+const INSTALL_HINT =
+  "curl -fsSL https://agentpassport.ai/install.sh | bash";
 
 function shortId(id: string | null): string {
   if (!id) return "-";
@@ -56,9 +61,13 @@ export function PassportIdentity() {
   const [state, setState] = useState<LoadState>("loading");
   const [status, setStatus] = useState<KiteStatus | null>(null);
   const [session, setSession] = useState<SessionCreateState>({ kind: "idle" });
+  const [guideOpen, setGuideOpen] = useState(false);
+  const pollBusy = useRef(false);
 
-  const refresh = useCallback(async () => {
-    setState("loading");
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
+    if (pollBusy.current) return;
+    pollBusy.current = true;
+    if (!opts?.silent) setState("loading");
     try {
       const res = await fetch("/api/kite/status", { cache: "no-store" });
       if (!res.ok) throw new Error("status failed");
@@ -68,12 +77,35 @@ export function PassportIdentity() {
     } catch {
       setStatus(null);
       setState("error");
+    } finally {
+      pollBusy.current = false;
     }
   }, []);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // Re-poll when the user returns from Passport login / passkey windows.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh({ silent: true });
+    };
+    const onFocus = () => void refresh({ silent: true });
+    window.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [refresh]);
+
+  // While the connect guide is open, keep status fresh.
+  useEffect(() => {
+    if (!guideOpen) return;
+    const timer = window.setInterval(() => void refresh({ silent: true }), 4000);
+    return () => window.clearInterval(timer);
+  }, [guideOpen, refresh]);
 
   const createSession = useCallback(async () => {
     if (!status?.canCreateSession) return;
@@ -107,8 +139,8 @@ export function PassportIdentity() {
         kind: "ready",
         approvalUrl: data.approvalUrl ?? null,
         detail: data.approvalUrl
-          ? "Approve the Passport spending session with your passkey, then return here."
-          : "Passport session request sent. If a passkey prompt appears in another window, approve it.",
+          ? "Approve the Passport spending session with your passkey, then return here and Refresh status."
+          : "Passport session request sent. If a passkey prompt appears in another window, approve it, then Refresh status.",
       });
       void refresh();
     } catch {
@@ -119,7 +151,15 @@ export function PassportIdentity() {
     }
   }, [refresh, status?.canCreateSession]);
 
+  const openConnect = useCallback(() => {
+    setGuideOpen(true);
+    const url = status?.connectUrl || PASSPORT_DASHBOARD;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, [status?.connectUrl]);
+
   const tone = statusTone(status);
+  const connectUrl = status?.connectUrl || PASSPORT_DASHBOARD;
+  const installCmd = status?.nextCommand || INSTALL_HINT;
 
   return (
     <div className="mt-5 rounded-xl border border-[rgba(117,217,231,0.14)] bg-white/[0.025] px-3.5 py-3.5 sm:px-4">
@@ -200,35 +240,113 @@ export function PassportIdentity() {
               : "Create Passport session"}
           </button>
         ) : (
-          <a
-            href={status?.connectUrl || "https://docs.gokite.ai"}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={openConnect}
             className="qs-btn-primary inline-flex min-h-10 items-center rounded-xl px-3 py-2 text-[0.78rem] font-semibold touch-manipulation"
           >
             Connect Passport
-          </a>
+          </button>
         )}
+        {!status?.canCreateSession ? (
+          <button
+            type="button"
+            onClick={() => setGuideOpen((open) => !open)}
+            className="qs-btn-secondary inline-flex min-h-10 items-center rounded-xl px-3 py-2 text-[0.78rem] font-semibold touch-manipulation"
+            aria-expanded={guideOpen}
+          >
+            {guideOpen ? "Hide steps" : "How to connect"}
+          </button>
+        ) : null}
       </div>
 
-      {session.kind === "ready" ||
-      session.kind === "fallback" ||
-      session.kind === "error" ? (
-        <p className="m-0 mt-3 text-[0.78rem] leading-snug text-[var(--muted)]">
-          {session.detail}
-          {session.kind === "ready" && session.approvalUrl ? (
-            <>
-              {" "}
+      {guideOpen && !status?.canCreateSession ? (
+        <div
+          className="mt-3 rounded-xl border border-[rgba(117,217,231,0.18)] bg-black/25 px-3.5 py-3"
+          role="region"
+          aria-label="Connect Passport steps"
+        >
+          <p className="m-0 text-[0.82rem] font-medium text-[rgba(220,235,240,0.95)]">
+            Connect with Passport (email + passkey)
+          </p>
+          <ol className="m-0 mt-2 list-decimal space-y-2 pl-4 text-[0.78rem] leading-snug text-[var(--muted)]">
+            <li>
+              Open the Passport login dashboard and sign in (or create a passkey
+              account):{" "}
               <a
-                href={session.approvalUrl}
+                href={connectUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-[rgba(117,217,231,0.95)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
               >
-                Open passkey approval
+                agentpassport.ai/dashboard
               </a>
-            </>
-          ) : null}
+            </li>
+            <li>
+              On a machine where QuoteSeal can see{" "}
+              <span className="font-mono text-[0.72rem]">kpass</span>, install
+              and log in locally (
+              <a
+                href={PASSPORT_HOME}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-[rgba(117,217,231,0.95)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+              >
+                install
+              </a>
+              ), then run login from your agent or terminal. Prod containers
+              often have no CLI - identity then stays on the sealed local rail
+              unless the host publishes a Passport agent id.
+            </li>
+            <li>
+              Return here and click{" "}
+              <span className="font-medium text-[rgba(220,235,240,0.92)]">
+                Refresh status
+              </span>
+              . Status also refreshes when you come back to this tab.
+            </li>
+            <li>
+              When status shows Passport connected, use{" "}
+              <span className="font-medium text-[rgba(220,235,240,0.92)]">
+                Create Passport session
+              </span>{" "}
+              and approve the passkey link if one appears.
+            </li>
+          </ol>
+          <p className="m-0 mt-3 break-all rounded-lg border border-white/[0.06] bg-black/30 px-2.5 py-2 font-mono text-[0.68rem] text-[rgba(180,210,220,0.88)]">
+            {installCmd}
+          </p>
+        </div>
+      ) : null}
+
+      {session.kind === "ready" && session.approvalUrl ? (
+        <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-3.5 py-3">
+          <p className="m-0 text-[0.82rem] font-medium text-emerald-100">
+            Passkey approval required
+          </p>
+          <p className="m-0 mt-1.5 text-[0.78rem] leading-snug text-[rgba(220,235,240,0.88)]">
+            {session.detail}
+          </p>
+          <a
+            href={session.approvalUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="qs-btn-primary mt-3 inline-flex min-h-10 items-center rounded-xl px-3 py-2 text-[0.78rem] font-semibold touch-manipulation"
+          >
+            Open passkey approval
+          </a>
+        </div>
+      ) : null}
+
+      {session.kind === "ready" && !session.approvalUrl ? (
+        <p className="m-0 mt-3 text-[0.78rem] leading-snug text-[var(--muted)]">
+          {session.detail}
+        </p>
+      ) : null}
+
+      {session.kind === "fallback" || session.kind === "error" ? (
+        <p className="m-0 mt-3 text-[0.78rem] leading-snug text-[var(--muted)]">
+          {session.detail}
         </p>
       ) : null}
 
