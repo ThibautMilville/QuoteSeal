@@ -33,7 +33,7 @@ curl -s -X POST "$BASE_URL/api/run" \\
         "preferredTiers": ["cheap", "standard", "premium"]
       },
       "session": {
-        "taskSummary": "Demo sealed run",
+        "taskSummary": "Sealed quote run",
         "maxAmountPerTx": 1,
         "maxTotalAmount": 3,
         "ttlHours": 2,
@@ -43,19 +43,19 @@ curl -s -X POST "$BASE_URL/api/run" \\
           "$BASE_URL/api/x402/quote/standard",
           "$BASE_URL/api/x402/quote/premium"
         ],
-        "mode": "demo_local"
+        "mode": "kite_sandbox"
       },
       "plan": [
         { "tier": "cheap", "reason": "Under seal", "expectedPriceUsdc": 0.3 },
         { "tier": "standard", "reason": "Under seal", "expectedPriceUsdc": 0.8 },
         { "tier": "premium", "reason": "May block", "expectedPriceUsdc": 1.5 }
       ],
-      "rationale": "Agent demo plan",
+      "rationale": "Agent sealed plan",
       "source": "fallback"
     }
   }'`;
 
-export const X402_CURL = `# x402-shaped fixture merchants (402 without X-PAYMENT; seal enforced with session token)
+export const X402_CURL = `# Quote network merchants (402 without X-PAYMENT; seal enforced with session token)
 curl -s "$BASE_URL/api/x402/quote/cheap"
 curl -s "$BASE_URL/api/x402/quote/standard"
 curl -s "$BASE_URL/api/x402/quote/premium"`;
