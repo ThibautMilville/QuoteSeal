@@ -11,13 +11,13 @@ import {
 import { mountIntroScene, type IntroSceneHandle } from "@/shared/ui/opening-intro-scene";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 
-const INTRO_MS = 4400;
-const EXIT_MS = 640;
-const HARD_MAX_MS = 9000;
-/** Matches `.qs-intro-name-text` sweep: 0.12s delay + 1.35s run */
-const NAME_SWEEP_MS = 1470;
-const TAGLINE_DELAY_MS = 280;
-const HOLD_MS = 520;
+const INTRO_MS = 2400;
+const EXIT_MS = 400;
+const HARD_MAX_MS = 4500;
+/** Matches `.qs-intro-name-text` sweep: 0.05s delay + 0.7s run */
+const NAME_SWEEP_MS = 750;
+const TAGLINE_DELAY_MS = 100;
+const HOLD_MS = 320;
 
 type Phase = "checking" | "playing" | "exiting" | "done";
 
@@ -57,8 +57,8 @@ function isLowPowerDevice(): boolean {
 }
 
 /**
- * Single brand path: the same QuoteSealMark SVG stamps in with atmosphere
- * behind it - never a different 3D glyph. Then name + tagline.
+ * Single brand path: QuoteSealMark stamps, then name + brief tagline.
+ * Light slate/teal atmosphere behind the SVG - never a competing 3D glyph.
  */
 export function OpeningIntro({ children }: { children: ReactNode }) {
   const reducedMotion = useSyncExternalStore(

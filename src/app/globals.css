@@ -509,10 +509,9 @@ body.qs-intro-active {
   place-items: center;
   /* Dark slate page base + light teal accent - no blue fog wash */
   background:
-    radial-gradient(ellipse 55% 42% at 50% 46%, rgba(61, 220, 151, 0.1), transparent 62%),
-    radial-gradient(ellipse 90% 70% at 50% 108%, rgba(12, 18, 32, 0.9), transparent 55%),
-    linear-gradient(180deg, #0c1220 0%, #02090d 52%, #01050a 100%);
-  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+    radial-gradient(ellipse 50% 38% at 50% 46%, rgba(61, 220, 151, 0.07), transparent 64%),
+    linear-gradient(180deg, #0c1220 0%, #02090d 55%, #01050a 100%);
+  transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-overlay::after {
@@ -542,7 +541,7 @@ body.qs-intro-active {
   height: 100%;
   pointer-events: none;
   image-rendering: auto;
-  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-overlay.is-exiting .qs-intro-canvas {
@@ -556,7 +555,7 @@ body.qs-intro-active {
   z-index: 1;
   width: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
   height: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
-  transform: translate(-50%, -50%) scale(0.42) rotate(-48deg);
+  transform: translate(-50%, -50%) scale(0.55) rotate(-28deg);
   opacity: 0;
   pointer-events: none;
   filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
@@ -564,7 +563,7 @@ body.qs-intro-active {
 }
 
 .qs-intro-mark.is-stamping {
-  animation: qsIntroMarkStamp 1.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: qsIntroMarkStamp 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .qs-intro-mark-svg {
@@ -575,42 +574,38 @@ body.qs-intro-active {
   overflow: visible;
 }
 
-/* Beat 1: stamp impact then settle - one strong motion arc */
+/* Beat 1: short stamp then settle */
 @keyframes qsIntroMarkStamp {
   0% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 22vh)) scale(0.42) rotate(-240deg);
+    transform: translate(-50%, calc(-50% - 10vh)) scale(0.55) rotate(-48deg);
     filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
   }
-  38% {
+  55% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1) rotate(4deg);
-    filter: drop-shadow(0 0 36px rgba(90, 238, 190, 0.55));
+    transform: translate(-50%, -50%) scale(1.06) rotate(2deg);
+    filter: drop-shadow(0 0 22px rgba(90, 238, 190, 0.4));
   }
-  52% {
-    transform: translate(-50%, -50%) scale(0.94) rotate(-1deg);
-    filter: drop-shadow(0 0 14px rgba(90, 238, 190, 0.22));
-  }
-  72% {
-    transform: translate(-50%, -50%) scale(1.03) rotate(0deg);
-    filter: drop-shadow(0 0 30px rgba(90, 238, 190, 0.42));
+  78% {
+    transform: translate(-50%, -50%) scale(0.97) rotate(-0.5deg);
+    filter: drop-shadow(0 0 12px rgba(90, 238, 190, 0.22));
   }
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
-    filter: drop-shadow(0 0 20px rgba(90, 238, 190, 0.3));
+    filter: drop-shadow(0 0 16px rgba(90, 238, 190, 0.28));
   }
 }
 
 .qs-intro-overlay.is-exiting .qs-intro-mark {
   animation: none;
   opacity: 0;
-  transform: translate(-50%, -58%) scale(1.06);
-  filter: drop-shadow(0 0 10px rgba(90, 238, 190, 0.12));
+  transform: translate(-50%, -54%) scale(1.02);
+  filter: drop-shadow(0 0 8px rgba(90, 238, 190, 0.1));
   transition:
-    opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.48s ease;
+    opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.34s ease;
 }
 
 .qs-intro-copy {
@@ -631,12 +626,12 @@ body.qs-intro-active {
   font-size: clamp(1.9rem, 6vw, 3.4rem);
   line-height: 1.1;
   opacity: 0;
-  letter-spacing: 0.1em;
-  transform: translateY(0.7rem);
+  letter-spacing: 0.06em;
+  transform: translateY(0.4rem);
   transition:
-    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 1.05s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-name.is-visible {
@@ -654,14 +649,13 @@ body.qs-intro-active {
   background-image: linear-gradient(
     100deg,
     #f5fbfd 0%,
-    #f5fbfd 36%,
-    #93f2d1 44%,
-    #3ddc97 50%,
-    #5beebe 56%,
-    #f5fbfd 64%,
+    #f5fbfd 38%,
+    #93f2d1 46%,
+    #3ddc97 52%,
+    #f5fbfd 62%,
     #f5fbfd 100%
   );
-  background-size: 300% 100%;
+  background-size: 260% 100%;
   background-position: 100% 50%;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
@@ -671,7 +665,7 @@ body.qs-intro-active {
 }
 
 .qs-intro-name.is-visible .qs-intro-name-text {
-  animation: qsIntroNameSweep 1.35s cubic-bezier(0.45, 0, 0.25, 1) 0.12s both;
+  animation: qsIntroNameSweep 0.7s cubic-bezier(0.45, 0, 0.25, 1) 0.05s both;
 }
 
 .qs-intro-tagline {
@@ -684,10 +678,10 @@ body.qs-intro-active {
   text-transform: uppercase;
   color: rgba(138, 163, 173, 0.92);
   opacity: 0;
-  transform: translateY(0.5rem);
+  transform: translateY(0.3rem);
   transition:
-    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-tagline.is-visible {
@@ -706,10 +700,10 @@ body.qs-intro-active {
 
 .qs-intro-overlay.is-exiting .qs-intro-copy {
   opacity: 0;
-  transform: translateY(-0.45rem);
+  transform: translateY(-0.3rem);
   transition:
-    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-skip {
@@ -731,7 +725,7 @@ body.qs-intro-active {
   text-transform: uppercase;
   opacity: 0;
   touch-action: manipulation;
-  animation: qsIntroSkipIn 0.5s ease 1.1s forwards;
+  animation: qsIntroSkipIn 0.35s ease 0.45s forwards;
   transition:
     color 0.2s ease,
     opacity 0.2s ease;
