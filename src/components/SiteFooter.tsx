@@ -22,22 +22,12 @@ const STACK = [
     markClassName: "h-6 w-6",
     showLabel: true,
   },
-  {
-    href: "https://nextjs.org/docs",
-    label: "Next.js",
-    markSrc: "/partners/next-logo-white.svg",
-    markAlt: "Next.js logo",
-    markWidth: 90,
-    markHeight: 18,
-    markClassName: "h-3.5 w-auto sm:h-4",
-    showLabel: false,
-  },
 ] as const;
 
 export function SiteFooter() {
   return (
-    <footer className="mt-4 border-t border-[var(--line)] pt-6 pb-2 sm:mt-6 sm:pt-7">
-      <div className="flex flex-col items-stretch gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+    <footer className="mt-4 border-t border-[var(--line)] pt-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:mt-5 sm:pt-6">
+      <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div className="min-w-0 text-center sm:text-left">
           <div className="flex items-center justify-center gap-2.5 sm:justify-start">
             <QuoteSealMark className="h-8 w-8" />
@@ -50,7 +40,7 @@ export function SiteFooter() {
             seal, and buys stay inside the cap.
           </p>
           <p className="m-0 mt-2.5 font-mono text-[0.68rem] leading-relaxed text-[var(--muted)]">
-            &copy; 2026 QuoteSeal · No real money · no custody · demo quotes
+            &copy; 2026 QuoteSeal - no real money - no custody - demo quotes
             only
           </p>
           <p className="m-0 mt-1 font-mono text-[0.68rem] leading-relaxed text-[var(--muted)]">
@@ -58,7 +48,7 @@ export function SiteFooter() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2.5 sm:items-end">
+        <div className="flex flex-col items-center gap-2 sm:items-end">
           <p className="m-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[var(--muted)]">
             Stack
           </p>
@@ -92,7 +82,7 @@ export function SiteFooter() {
             ))}
           </nav>
           <nav
-            className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[0.78rem] sm:justify-end"
+            className="mt-0.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[0.78rem] sm:justify-end"
             aria-label="Footer links"
           >
             <a

@@ -1,117 +1,161 @@
 # QuoteSeal
 
-**Sealed agent spending for quotes** - a SERV Hackathon demo on the **Kite** track.
+**Sealed agent spending for quotes** - SERV Hackathon Edition 02, **Kite** track.
 
-QuoteSeal turns a plain-English request into a **spending seal**. You approve the seal once. Quotes inside the cap are paid; anything above is blocked. Raising the limit always needs a new approval - never a silent escalate.
+Agents that can pay need hard caps. QuoteSeal turns a plain-English request into a **spending seal** (total + max per quote). You approve once. Quotes inside the cap are paid; anything above is **blocked** at pay time. Raising the limit always needs a **new approval** - never a silent escalate.
 
-No real money moves in this demo. Local x402-shaped merchants return fixture quotes. Kite Passport is optional and stays zero-spend unless you opt into a sandbox session yourself.
+| | |
+| --- | --- |
+| Live | https://quoteseal.ozc.fr |
+| Repo | https://github.com/ThibautMilville/QuoteSeal |
+| OpenAPI | https://quoteseal.ozc.fr/openapi.yaml |
+| License | MIT |
 
----
+![Landing / hero + assistant](./docs/screenshots/landing-hero.png)
 
-## Why
+![Chat spending seal](./docs/screenshots/chat-seal.png)
 
-Agent wallets can overspend without hard caps. QuoteSeal shows a product pattern:
+![Paid quotes + blocked premium + raise ask](./docs/screenshots/paid-blocked.png)
 
-1. **Describe** the job in natural language (city, size, budget, max per quote).
-2. **Seal** - review a typed spending plan and approve it.
-3. **Buy / Block / Raise** - pay allowed quotes, refuse overspend at pay time, and ask before raising the seal.
+## Built for the Kite track (honest map)
 
-The seal is enforced in code at payment time. Reasoning can propose a plan; it cannot unlock a payment past the seal.
+Three Kite pillars - what this demo shows, and what it does **not** claim:
 
----
+| Pillar | What QuoteSeal shows | Caveat |
+| --- | --- | --- |
+| Verifiable identity | Optional `/api/kite/status` + `/api/kite/session`; Passport is the identity rail | Default path is `demo_local` - **no live Passport login required** |
+| User-defined permissions / spending limits | Spending **seal**: total + max per quote, pay-time refuse, raise needs new approval | Strongest pillar in this demo |
+| Agentic payments (shop / book / pay) | Local x402-shaped quote fixtures - buy / block / raise under the seal | **Zero real spend** on the public demo; Passport sandbox is opt-in |
+
+UI section: `#kite` on the live site.
+
+![Kite track section](./docs/screenshots/kite-track.png)
+
+## Where SERV sits (rules = code, judgment = SERV)
+
+| Step | Who | Role |
+| --- | --- | --- |
+| Mandate compile | **SERV** (or local parser) | Free text → typed `MandatePlan` (caps, plan steps, rationale) |
+| Seal approval | **Human** | Nothing spends until Approve |
+| Session create | **Code** | `demo_local` session with the approved caps |
+| Pay-time check | **Code** (authoritative) | Per-quote + total caps; overspend → `quote_blocked` |
+| Raise copy | **SERV** (optional) | Phrasing for a higher cap ask - never unlocks payment alone |
+| Safety | **Code** | SERV cannot override a block or silently raise the seal |
+
+Without `SERV_API_KEY`, mandate compile and raise phrasing use deterministic fallbacks with the same shape (app stays usable). Rules stay in code; judgment helps plan and explain.
 
 ## How it works
 
 | Step | What you see | What runs |
 | --- | --- | --- |
-| Describe | Chat + scenario chips | `POST /api/mandate` compiles intent into a plan |
-| Seal | Plain-English caps + Approve | Session proposal with per-tx and total limits |
-| Buy | Paid quote cards | Local merchants under the seal |
-| Block | Clear refusal copy | Pay-time rule check refuses overspend |
-| Raise | New approval ask | Optional SERV phrasing for a higher cap |
+| **Describe** | Chat + scenario chips | `POST /api/mandate` → sealed plan |
+| **Seal** | Plain-English caps + Approve | Session proposal (per-tx + total + TTL) |
+| **Buy** | Paid quote cards | Local merchants under the seal |
+| **Block** | Clear refusal copy | Pay-time rule check refuses overspend |
+| **Raise** | New approval ask | Optional SERV phrasing for a higher cap |
 
-The on-page **Product flow** diagram animates this lane (Describe - Seal - Buy) and the three outcomes (Buy / Block / Raise). It tracks the live chat when you run a demo.
+The on-page **Product flow** diagram animates Describe - Seal - Buy and the three outcomes (Buy / Block / Raise). It tracks the live chat when you run a demo.
 
----
+![Product flow diagram](./docs/screenshots/flow-diagram.png)
 
 ## Architecture
 
+```mermaid
+flowchart TD
+  UI[Browser UI - chat + flow diagram]
+  M[POST /api/mandate]
+  R[POST /api/run]
+  S[Sealed session store - code]
+  X[GET /api/x402/quote/tier - fixtures]
+  SERV[SERV Reasoning - optional]
+  K[Optional /api/kite/* Passport]
+
+  UI --> M
+  M --> SERV
+  M -->|MandatePlan| UI
+  UI -->|Approve| R
+  R --> S
+  S -->|allow| X
+  S -->|refuse| UI
+  R --> UI
+  UI -.-> K
+```
+
+ASCII map:
+
 ```
 Browser (Next.js UI)
-  │
   ├─ Opening intro (Three.js seal)
-  ├─ Mandate chat
-  └─ Flow diagram (SVG schematic)
+  ├─ Mandate chat + Product flow diagram
+  └─ Kite / developers / agents sections
         │
         ▼
   API routes
-  |- POST /api/mandate     - SERV or local parser - MandatePlan
-  |- POST /api/run         - sealed session + local quote buys
-  |- GET  /api/x402/quote/[tier]  - fixture merchants
+  |- POST /api/mandate          - SERV or local parser → MandatePlan
+  |- POST /api/run              - sealed session + buy / block / raise events
+  |- GET  /api/x402/quote/[tier] - fixture merchants (cheap / standard / premium)
   |- GET  /api/health
-  +- /api/kite/*           - optional Passport status / session
+  +- /api/kite/*                - optional Passport status / session
 ```
 
-**Stack:** Next.js 15, TypeScript, Tailwind 4, Three.js intro, Zod, OpenAI-compatible SERV client, optional `kpass` CLI.
+**Stack:** Next.js 15, TypeScript, Tailwind 4, Three.js intro, Zod, OpenAI-compatible SERV client, optional `kpass` CLI, MCP tools.
 
-**Safety model:** SERV (or the local parser) proposes. The sealed session store authorizes each payment. Overspend returns a blocked event; the UI asks for a new approval instead of auto-raising.
+Folder map: `src/components/*` (UI), `src/shared/mandate` + `run` + `quotes` (seal + fixtures), `src/shared/serv`, `src/shared/kite`, `src/app/api/*`, `mcp/server.ts`, `public/openapi.yaml`.
 
----
+## Demo scenarios (jury walkthrough)
 
-## Demo scenarios
+Open https://quoteseal.ozc.fr (or http://localhost:3010), skip or watch the intro, then use a chip or type the exact prompt.
 
-Open http://localhost:3010 after `npm run dev`, skip or watch the intro, then use a chip or type your own request.
+### Lyon - block premium (default)
 
-| Scenario chip | Message intent | Typical result |
-| --- | --- | --- |
-| Lyon · solar film · 1 USDC / quote | Default (40 m2, 3 USDC total) | Cheap + standard pay; **premium (~1.5) blocked** - raise ask |
-| Nantes · office paint · 0.5 USDC / quote | Tight per-quote cap | More blocks (standard/premium often refused) |
-| Paris · HVAC · 2 USDC / quote | Wide per-quote cap (5 USDC total) | Cheap + standard + **premium can all pay** |
+**Chip:** `Lyon · solar film · 1 USDC / quote`
 
-**Suggested walkthrough (jury)**
+**Exact prompt:**
 
-1. Chip **Lyon · solar film · 1 USDC / quote** (or type the same message).
-2. Read the spending seal (total + max per quote) - **limits** pillar.
-3. Click **Approve and buy**.
-4. See paid quotes, a blocked premium, and a raise ask - no silent escalate.
-5. Optional second run: chip **Paris · HVAC · 2 USDC / quote** so premium pays too.
-6. Scroll **Built for the Kite track** (`#kite`): identity optional, limits strong, payments = fixtures.
-7. Watch the **Product flow** diagram update in sync.
+```text
+Get up to 3 quotes for a 40 m2 solar-film install in Lyon. Total budget 3 USDC. Max 1 USDC per quote. Valid for 2 hours.
+```
 
----
+1. Read the spending seal (3 USDC total, 1 USDC max per quote) - **limits** pillar.
+2. Click **Approve and buy**.
+3. Expect: cheap (~0.3) + standard (~0.8) **paid**; premium (~1.5) **blocked**; **raise ask** for a higher per-quote seal - no silent escalate.
 
-## API endpoints
+### Paris - HVAC all pay
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/health` | App readiness + optional Kite CLI hints |
-| `POST` | `/api/mandate` | Body `{ message }` - sealed plan JSON |
-| `POST` | `/api/run` | Body `{ plan }` - session + buy/block/raise events |
-| `GET` | `/api/x402/quote/cheap` | Fixture merchant (~0.3 USDC test) |
-| `GET` | `/api/x402/quote/standard` | Fixture merchant (~0.8 USDC test) |
-| `GET` | `/api/x402/quote/premium` | Fixture merchant (~1.5 USDC test) |
-| `GET` | `/api/kite/status` | Passport / `kpass` install state |
-| `POST` | `/api/kite/session` | Optional real Passport session when logged in |
+**Chip:** `Paris · HVAC · 2 USDC / quote`
 
-Local merchants (x402-shaped fixtures):
+**Exact prompt:**
 
-| Path | Vendor | Price (USDC test) |
+```text
+Get 3 HVAC install quotes for 120 m2 in Paris. Session budget 5 USDC. Max 2 USDC per quote. Valid for 2 hours.
+```
+
+Expect: cheap + standard + **premium can all pay** under the wider per-quote cap.
+
+### Nantes - tight cap (optional)
+
+**Chip:** `Nantes · office paint · 0.5 USDC / quote` - more blocks (standard/premium often refused).
+
+Fixture merchants (USDC test):
+
+| Path | Vendor | Price |
 | --- | --- | --- |
 | `/api/x402/quote/cheap` | NordGlass Express | 0.3 |
 | `/api/x402/quote/standard` | Seine Film Pro | 0.8 |
 | `/api/x402/quote/premium` | Atlas Solar Shield | 1.5 |
 
-### Agent surface
+## API
 
-| Piece | Where |
-| --- | --- |
-| OpenAPI 3 | [`/openapi.yaml`](./public/openapi.yaml) (live: https://quoteseal.ozc.fr/openapi.yaml) |
-| UI | Sections `#developers` and `#agents` |
-| MCP | `npm run mcp` - tools `quote_seal_mandate`, `quote_seal_run`, `quote_seal_health` |
-
-```bash
-npm run mcp   # QUOTESEAL_BASE_URL defaults to https://quoteseal.ozc.fr
-```
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/health` | Readiness + optional Kite / SERV hints |
+| `POST` | `/api/mandate` | Body `{ message }` → sealed `MandatePlan` |
+| `POST` | `/api/run` | Body `{ plan }` → session + buy/block/raise events |
+| `GET` | `/api/x402/quote/cheap` | Fixture merchant |
+| `GET` | `/api/x402/quote/standard` | Fixture merchant |
+| `GET` | `/api/x402/quote/premium` | Fixture merchant |
+| `GET` | `/api/kite/status` | Passport / `kpass` install state |
+| `POST` | `/api/kite/session` | Optional real Passport session when logged in |
 
 ```bash
 BASE_URL=https://quoteseal.ozc.fr
@@ -123,7 +167,23 @@ curl -s -X POST "$BASE_URL/api/mandate" \
   -d '{"message":"40 m2 solar film in Lyon, 3 USDC total, 1 USDC max per quote"}'
 ```
 
----
+`POST /api/run` expects the `MandatePlan` returned by `/api/mandate` (or a `{ plan }` wrapper). Events include `session_approved`, `quote_paid`, `quote_blocked`, `raise_ask`, `done`. Mode on the default path: `demo_local`.
+
+## For agents (MCP / OpenAPI)
+
+| | |
+| --- | --- |
+| OpenAPI 3 | [`/openapi.yaml`](./public/openapi.yaml) (live: https://quoteseal.ozc.fr/openapi.yaml) |
+| UI | Sections `#developers` and `#agents` |
+| MCP | `npm run mcp` - tools `quote_seal_mandate`, `quote_seal_run`, `quote_seal_health` |
+
+```bash
+npm run mcp   # QUOTESEAL_BASE_URL defaults to https://quoteseal.ozc.fr
+```
+
+**Agent rule:** when an event is `quote_blocked` / `raise_ask`, do not force the payment. Show the human a new seal approval.
+
+![Developers / agents](./docs/screenshots/developers-agents.png)
 
 ## Local setup
 
@@ -146,18 +206,18 @@ npm run lint
 npm run mcp
 ```
 
-### Environment variables
+### Environment (`.env.example`)
 
-Copy `.env.example` to `.env.local`. **Never commit `.env.local`.** No real secrets belong in the repo.
+Copy to `.env.local`. **Never commit `.env.local`.** No real secrets belong in the repo.
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `SERV_API_KEY` | No | Optional. Without it, mandate compile uses a deterministic local parser and the app still works. Get a key at https://console.openserv.ai (hackathon credits). Server-only - never `NEXT_PUBLIC_`. |
+| `SERV_API_KEY` | No | Without it, mandate compile uses a local parser. Get a key at https://console.openserv.ai. Server-only - never `NEXT_PUBLIC_`. |
 | `SERV_BASE_URL` | No | Defaults to OpenServ inference API |
 | `SERV_MODEL_FAST` / `SMALL` / `LARGE` | No | Model routing tiers |
 | `NEXT_PUBLIC_APP_URL` | No | Public origin for x402 resource URLs (default `http://localhost:3010`) |
 | `QUOTESEAL_BASE_URL` | No | MCP HTTP target (default `https://quoteseal.ozc.fr`) |
-| `KPASS_BIN` | No | Absolute path to `kpass` if it is not on `PATH` |
+| `KPASS_BIN` | No | Absolute path to `kpass` if not on `PATH` |
 
 Optional Kite Passport CLI:
 
@@ -167,7 +227,14 @@ curl -fsSL https://cli.gokite.ai/install.sh | bash
 
 Health and kite routes report install / login state. The demo remains zero real spend until you explicitly use a sandbox Passport session.
 
----
+## Safety
+
+- **No custody** and **no real USDC** on the default `demo_local` path.
+- Overspend is refused at pay time in application code.
+- Raising the seal requires a new user approval - never a silent escalate.
+- SERV proposes plans and copy; it cannot unlock a payment the seal blocks.
+- Public demo API has no auth today - treat the base URL as a demo surface.
+- Not financial advice. Fixture vendors and prices are for demonstration only.
 
 ## Hackathon context
 
@@ -175,43 +242,6 @@ Health and kite routes report install / login state. The demo remains zero real 
 - **Track:** Kite (agent payments / Passport-shaped spending)
 - **Story:** sealed quote purchases with hard caps, local merchants, optional Passport wiring
 - **Non-goals:** custody, production payments, Amazon checkout, silent budget increases
-
-### Built for the Kite track (honest demo map)
-
-| Pillar (Kite) | What QuoteSeal shows | Caveat |
-| --- | --- | --- |
-| Verifiable identity | Optional `/api/kite/status` + session wiring; Passport is the identity rail | `demo_local` does **not** require a live Passport login |
-| User-defined permissions / spending limits | Spending **seal**: total + max per quote, pay-time refuse, raise needs new approval | Strongest pillar in this demo |
-| Agentic payments (shop / book / pay) | Local x402-shaped quote fixtures - buy / block / raise under the seal | Zero real spend on the public demo; Passport sandbox is opt-in |
-
-UI section: `#kite` on https://quoteseal.ozc.fr
-
----
-
-## Safety
-
-- No custody and no real USDC in the default demo path.
-- Overspend is refused at pay time in application code.
-- Raising the seal requires a new user approval.
-- Not financial advice. Fixture vendors and prices are for demonstration only.
-
----
-
-## Screenshots / preview
-
-Run the app locally and capture:
-
-1. Opening seal intro
-2. Chat with spending seal + Approve
-3. Paid quotes + blocked overspend
-4. Animated **Product flow** diagram (Describe - Seal - Buy / Block / Raise)
-
-```bash
-npm run dev
-# open http://localhost:3010
-```
-
----
 
 ## License
 

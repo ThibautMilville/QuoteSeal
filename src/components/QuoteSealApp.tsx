@@ -102,7 +102,8 @@ export function QuoteSealApp() {
         homeHref="#top"
       />
 
-      <main className="qs-page-enter mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-5 px-3 pb-28 pt-24 sm:gap-6 sm:px-4 sm:pb-24 sm:pt-28 md:px-6">
+      <main className="qs-page-enter mx-auto flex w-full max-w-[1100px] flex-1 flex-col px-3 pt-24 sm:px-4 sm:pt-28 md:px-6">
+        <div className="flex flex-1 flex-col gap-5 pb-16 sm:gap-6 sm:pb-14">
         <header className="relative min-w-0">
           <p className="section-kicker m-0">Sealed quote buys</p>
           <div className="mt-3 flex min-w-0 items-center gap-3 sm:gap-4">
@@ -365,6 +366,7 @@ export function QuoteSealApp() {
         <ForAgentsSection />
 
         <FaqSection />
+        </div>
 
         <SiteFooter />
       </main>
