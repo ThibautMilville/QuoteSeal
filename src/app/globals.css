@@ -507,10 +507,11 @@ body.qs-intro-active {
   z-index: 100000;
   display: grid;
   place-items: center;
+  /* Dark slate page base + light teal accent - no blue fog wash */
   background:
-    radial-gradient(ellipse 70% 55% at 50% 46%, rgba(26, 107, 98, 0.28), transparent 55%),
-    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(6, 40, 48, 0.55), transparent 50%),
-    linear-gradient(180deg, #031016 0%, #02090d 48%, #010608 100%);
+    radial-gradient(ellipse 55% 42% at 50% 46%, rgba(61, 220, 151, 0.1), transparent 62%),
+    radial-gradient(ellipse 90% 70% at 50% 108%, rgba(12, 18, 32, 0.9), transparent 55%),
+    linear-gradient(180deg, #0c1220 0%, #02090d 52%, #01050a 100%);
   transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -521,9 +522,9 @@ body.qs-intro-active {
   pointer-events: none;
   background: radial-gradient(
     circle at 50% 48%,
-    transparent 28%,
-    rgba(1, 6, 8, 0.35) 72%,
-    rgba(1, 6, 8, 0.72) 100%
+    transparent 32%,
+    rgba(12, 18, 32, 0.4) 74%,
+    rgba(2, 9, 13, 0.78) 100%
   );
   z-index: 0;
 }
@@ -655,8 +656,8 @@ body.qs-intro-active {
     #f5fbfd 0%,
     #f5fbfd 36%,
     #93f2d1 44%,
-    #5beebe 50%,
-    #75d9e8 56%,
+    #3ddc97 50%,
+    #5beebe 56%,
     #f5fbfd 64%,
     #f5fbfd 100%
   );

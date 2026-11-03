@@ -32,8 +32,9 @@ function easeInOutCubic(t: number) {
 }
 
 /**
- * Atmosphere only: fog, soft shafts, bloom-like glow, particles, camera ease
+ * Atmosphere only: slate fog, teal shafts/glow, particles, camera ease
  * behind the HTML QuoteSealMark. Never draws a competing seal glyph.
+ * Palette: #0c1220 slate + #3ddc97 / --accent teal (no blue wash).
  */
 export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   const { canvas, durationMs, onComplete, onReveal, lowPower = false } = options;
@@ -52,25 +53,26 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x02090d, lowPower ? 0.055 : 0.042);
+  // Slate brand fog (#0c1220) - no cool blue wash
+  scene.fog = new THREE.FogExp2(0x0c1220, lowPower ? 0.05 : 0.038);
 
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
   const camStartZ = 8.4;
   const camEndZ = 5.85;
   camera.position.set(0, 0.08, camStartZ);
 
-  // --- Soft bloom disc (fake bloom, mobile-safe) ---
+  // --- Soft bloom disc (teal on slate, kept subtle behind the SVG mark) ---
   const glowLayers: THREE.Mesh[] = [];
   const glowSpecs = lowPower
     ? [
-        { r: 1.9, opacity: 0.22, color: 0x145a52 },
-        { r: 1.15, opacity: 0.32, color: 0x1a6b62 },
+        { r: 1.7, opacity: 0.12, color: 0x0f2a24 },
+        { r: 1.0, opacity: 0.2, color: 0x1a5c48 },
       ]
     : [
-        { r: 2.35, opacity: 0.16, color: 0x0d3d3a },
-        { r: 1.75, opacity: 0.24, color: 0x145a52 },
-        { r: 1.1, opacity: 0.36, color: 0x1a6b62 },
-        { r: 0.55, opacity: 0.28, color: 0x36b8a6 },
+        { r: 2.1, opacity: 0.08, color: 0x0c1220 },
+        { r: 1.55, opacity: 0.14, color: 0x12352c },
+        { r: 0.95, opacity: 0.22, color: 0x1f6b52 },
+        { r: 0.48, opacity: 0.2, color: 0x3ddc97 },
       ];
   for (const spec of glowSpecs) {
     const geo = new THREE.CircleGeometry(spec.r, lowPower ? 24 : 48);
@@ -114,12 +116,13 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
       void main() {
         vec2 p = vUv * 2.0 - 1.0;
         float r = length(p);
-        float wave = sin(r * 9.0 - uTime * 1.6) * 0.018 * uDistort;
-        float ring = smoothstep(0.95, 0.55, r + wave) * smoothstep(0.08, 0.42, r);
-        float core = exp(-r * r * 2.8) * 0.45;
-        float haze = exp(-r * r * 0.55) * 0.22;
-        float a = (ring * 0.55 + core + haze) * uOpacity;
-        vec3 tint = mix(vec3(0.08, 0.38, 0.36), vec3(0.48, 0.94, 0.84), core + 0.25);
+        float wave = sin(r * 9.0 - uTime * 1.6) * 0.014 * uDistort;
+        float ring = smoothstep(0.9, 0.52, r + wave) * smoothstep(0.1, 0.4, r);
+        float core = exp(-r * r * 3.2) * 0.32;
+        float haze = exp(-r * r * 0.7) * 0.12;
+        float a = (ring * 0.4 + core + haze) * uOpacity;
+        // Slate -> brand teal (#3ddc97), no cyan/blue
+        vec3 tint = mix(vec3(0.05, 0.14, 0.12), vec3(0.24, 0.86, 0.59), core + 0.18);
         gl_FragColor = vec4(tint * a, min(1.0, a));
       }
     `,
@@ -128,7 +131,7 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   atmos.position.z = -0.7;
   scene.add(atmos);
 
-  // --- Soft light shafts (god-ray wedges) ---
+  // --- Soft light shafts (teal wedges, not blue god-rays) ---
   const shaftMeshes: THREE.Mesh[] = [];
   if (!lowPower) {
     const shaftMat = new THREE.ShaderMaterial({
@@ -155,19 +158,19 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
           float along = vUv.y;
           float across = abs(vUv.x - 0.5) * 2.0;
           float taper = (1.0 - across) * smoothstep(0.0, 0.2, along) * (1.0 - along);
-          float shimmer = 0.85 + 0.15 * sin(uTime * 1.4 + along * 6.0);
+          float shimmer = 0.88 + 0.12 * sin(uTime * 1.4 + along * 6.0);
           float a = taper * taper * uOpacity * shimmer;
-          vec3 tint = vec3(0.55, 0.95, 0.88);
-          gl_FragColor = vec4(tint * a, min(1.0, a * 1.2));
+          vec3 tint = vec3(0.24, 0.86, 0.59);
+          gl_FragColor = vec4(tint * a, min(1.0, a * 1.05));
         }
       `,
     });
     for (let i = 0; i < 3; i += 1) {
-      const geo = new THREE.PlaneGeometry(0.55 + i * 0.12, 3.6);
+      const geo = new THREE.PlaneGeometry(0.48 + i * 0.1, 3.2);
       const mesh = new THREE.Mesh(geo, shaftMat.clone());
-      const angle = -0.55 + i * 0.55;
+      const angle = -0.5 + i * 0.5;
       mesh.rotation.z = angle;
-      mesh.position.set(Math.sin(angle) * 0.35, 0.15, -0.9 - i * 0.05);
+      mesh.position.set(Math.sin(angle) * 0.3, 0.12, -0.9 - i * 0.05);
       mesh.userData.phase = i * 1.7;
       scene.add(mesh);
       shaftMeshes.push(mesh);
@@ -193,8 +196,8 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   const particleGeo = new THREE.BufferGeometry();
   particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   const particleMat = new THREE.PointsMaterial({
-    color: 0x7af0d0,
-    size: lowPower ? 0.04 : 0.052,
+    color: 0x3ddc97,
+    size: lowPower ? 0.038 : 0.048,
     transparent: true,
     opacity: 0,
     depthWrite: false,
@@ -219,8 +222,8 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   const dustGeo = new THREE.BufferGeometry();
   dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
   const dustMat = new THREE.PointsMaterial({
-    color: 0x5ec8d8,
-    size: lowPower ? 0.028 : 0.036,
+    color: 0x5beebe,
+    size: lowPower ? 0.026 : 0.032,
     transparent: true,
     opacity: 0,
     depthWrite: false,
@@ -258,8 +261,8 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
         if (discMask <= 0.001 || uOpacity <= 0.001) discard;
         float band = vLocal.x * 0.82 + vLocal.y * 0.38;
         float d = abs(band - uProgress);
-        float streak = (exp(-d * d * 28.0) * 1.25 + exp(-d * d * 6.0) * 0.45) * discMask * uOpacity;
-        vec3 tint = vec3(0.86, 1.0, 0.96);
+        float streak = (exp(-d * d * 28.0) * 1.15 + exp(-d * d * 6.0) * 0.4) * discMask * uOpacity;
+        vec3 tint = vec3(0.78, 1.0, 0.9);
         gl_FragColor = vec4(tint * streak, min(1.0, streak));
       }
     `,
@@ -296,9 +299,9 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
         float radius = 0.35 + uProgress * 1.55;
         float band = abs(r - radius);
         float ring = exp(-band * band * 90.0) * (1.0 - uProgress);
-        float fill = smoothstep(radius + 0.08, radius - 0.35, r) * (1.0 - uProgress) * 0.18;
+        float fill = smoothstep(radius + 0.08, radius - 0.35, r) * (1.0 - uProgress) * 0.14;
         float a = (ring + fill) * uOpacity;
-        vec3 tint = vec3(0.48, 0.94, 0.84);
+        vec3 tint = vec3(0.24, 0.86, 0.59);
         gl_FragColor = vec4(tint * a, min(1.0, a));
       }
     `,
@@ -367,16 +370,16 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
     }
 
     atmosUniforms.uTime.value = elapsed;
-    atmosUniforms.uOpacity.value = 0.85 * atmos;
+    atmosUniforms.uOpacity.value = 0.55 * atmos;
 
     for (const mesh of shaftMeshes) {
       const mat = mesh.material as THREE.ShaderMaterial;
-      mat.uniforms.uOpacity.value = 0.14 * atmos;
+      mat.uniforms.uOpacity.value = 0.08 * atmos;
       mat.uniforms.uTime.value = elapsed + (mesh.userData.phase as number);
     }
 
-    particleMat.opacity = 0.62 * atmos;
-    dustMat.opacity = 0.28 * atmos;
+    particleMat.opacity = 0.48 * atmos;
+    dustMat.opacity = 0.18 * atmos;
 
     for (let i = 0; i < particleCount; i += 1) {
       const ix = i * 3;
