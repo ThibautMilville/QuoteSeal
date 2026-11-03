@@ -9,6 +9,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { answerHelp, QS_HELP_HANDOFF } from "@/shared/help/fallback";
+import { AssistantResponseSpinner } from "@/shared/ui/AssistantResponseSpinner";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 
 type HelpMessage =
@@ -325,9 +326,9 @@ export function HelpWidget() {
           )}
 
           {pending ? (
-            <p className="m-0 font-mono text-[0.7rem] text-cyan-200/70">
-              Thinking…
-            </p>
+            <div className="text-cyan-200/80">
+              <AssistantResponseSpinner label="Thinking…" />
+            </div>
           ) : null}
         </div>
 
@@ -352,7 +353,7 @@ export function HelpWidget() {
             ))}
           </div>
           <form
-            className="flex items-end gap-2"
+            className="flex items-center gap-2"
             onSubmit={(event) => {
               event.preventDefault();
               void ask(input);
@@ -360,7 +361,7 @@ export function HelpWidget() {
           >
             <textarea
               ref={inputRef}
-              rows={2}
+              rows={1}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
@@ -372,12 +373,12 @@ export function HelpWidget() {
               maxLength={400}
               placeholder="Ask a question, or describe a quote job…"
               aria-label="Ask QuoteSeal"
-              className="min-h-10 min-w-0 flex-1 resize-none rounded-xl border border-emerald-200/15 bg-black/25 px-3 py-2 text-sm leading-snug text-[#f5fbfd] outline-none transition-[border-color] placeholder:text-slate-600 focus:border-emerald-200/35"
+              className="box-border h-10 min-h-10 min-w-0 flex-1 resize-none overflow-hidden rounded-xl border border-emerald-200/15 bg-black/25 px-3 py-2 text-sm leading-snug text-[#f5fbfd] outline-none transition-[border-color] placeholder:text-slate-600 focus:border-emerald-200/35"
             />
             <button
               type="submit"
               disabled={pending || !input.trim()}
-              className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-emerald-200/30 bg-emerald-200/[0.12] px-3.5 text-[0.8rem] font-medium text-emerald-100 transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-emerald-200/30 bg-emerald-200/[0.12] px-3.5 text-[0.8rem] font-medium text-emerald-100 transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Send
             </button>

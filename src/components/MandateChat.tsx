@@ -19,6 +19,7 @@ import {
   tierLabel,
 } from "@/shared/ui/chat-copy";
 import { QS_HELP_HANDOFF } from "@/shared/help/fallback";
+import { AssistantResponseSpinner } from "@/shared/ui/AssistantResponseSpinner";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 import { useTypewriterPlaceholder } from "@/shared/ui/useTypewriterPlaceholder";
 import type { FlowOutcome, FlowPhase } from "@/components/FlowDiagram";
@@ -398,7 +399,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
           <article className="qs-chat-row is-assistant">
             <QuoteSealMark className="mt-0.5 h-8 w-8 shrink-0 opacity-70" />
             <div className="qs-chat-bubble is-assistant">
-              <p className="qs-chat-text text-[var(--muted)]">Preparing your seal…</p>
+              <AssistantResponseSpinner label="Preparing your seal…" />
             </div>
           </article>
         ) : null}
@@ -413,8 +414,8 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
         <label className="sr-only" htmlFor="qs-chat-input">
           Describe your quote request - job, city, size, and budget
         </label>
-        <div className="flex items-end gap-2">
-          <div className="relative min-h-[2.75rem] flex-1">
+        <div className="flex items-center gap-2">
+          <div className="relative h-11 flex-1">
             <textarea
               id="qs-chat-input"
               ref={inputRef}
@@ -423,16 +424,16 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
               onKeyDown={onKeyDown}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              rows={2}
+              rows={1}
               disabled={busy !== null}
               placeholder={nativePlaceholder}
               aria-describedby="qs-chat-hint"
-              className="relative z-0 min-h-[2.75rem] w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--panel-2)] px-3.5 py-2.5 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(138,163,173,0.55)] focus:border-[rgba(91,238,190,0.45)] focus:shadow-[0_0_0_3px_rgba(91,238,190,0.12)] disabled:opacity-60"
+              className="relative z-0 box-border h-11 min-h-11 w-full resize-none overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--panel-2)] px-3.5 py-2.5 text-sm leading-snug outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(138,163,173,0.55)] focus:border-[rgba(91,238,190,0.45)] focus:shadow-[0_0_0_3px_rgba(91,238,190,0.12)] disabled:opacity-60"
             />
             {showOverlayPlaceholder ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl px-3.5 py-2.5 text-sm leading-normal text-[rgba(138,163,173,0.55)]"
+                className="pointer-events-none absolute inset-0 z-10 flex items-center overflow-hidden rounded-xl px-3.5 text-sm leading-snug text-[rgba(138,163,173,0.55)]"
               >
                 {typedPlaceholder}
                 <span className="qs-placeholder-caret ml-px inline-block h-[1em] w-px translate-y-[0.12em] bg-[rgba(138,163,173,0.65)] align-baseline" />

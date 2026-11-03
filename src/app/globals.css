@@ -927,6 +927,137 @@ body.qs-intro-active {
   }
 }
 
+/* Chat pending spinner - Signafy / Kodza ring + dots, QuoteSeal tokens via currentColor */
+.qs-assistant-spinner {
+  --qs-spinner-size: 1.15em;
+  --qs-spinner-stroke: 2.2;
+  --qs-spinner-track: 0.16;
+  --qs-spinner-tempo: 1;
+  --qs-spinner-gap: 0.55em;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qs-spinner-gap);
+  vertical-align: middle;
+  line-height: 1.25;
+  color: var(--accent, #5beebe);
+}
+
+.qs-assistant-spinner__icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--qs-spinner-size);
+  height: var(--qs-spinner-size);
+}
+
+.qs-assistant-spinner__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--qs-spinner-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qs-assistant-spinner__ring {
+  animation: qs-assistant-spinner-turn calc(1.6s * var(--qs-spinner-tempo)) linear infinite;
+}
+
+.qs-assistant-spinner__ring circle:first-child {
+  opacity: var(--qs-spinner-track);
+}
+
+.qs-assistant-spinner__ring circle:last-child {
+  stroke-dasharray: 1 100;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  animation: qs-assistant-spinner-arc calc(1.6s * var(--qs-spinner-tempo))
+    cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes qs-assistant-spinner-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes qs-assistant-spinner-arc {
+  0% {
+    stroke-dasharray: 1 100;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 58 100;
+    stroke-dashoffset: -14;
+  }
+  100% {
+    stroke-dasharray: 1 100;
+    stroke-dashoffset: -99;
+  }
+}
+
+.qs-assistant-spinner__dots {
+  display: flex;
+  align-items: center;
+  gap: 0.13em;
+}
+
+.qs-assistant-spinner__dots > span {
+  width: 0.22em;
+  height: 0.22em;
+  border-radius: 50%;
+  background: currentColor;
+  animation: qs-assistant-spinner-dot calc(1.1s * var(--qs-spinner-tempo))
+    cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.qs-assistant-spinner__dots > span:nth-child(2) {
+  animation-delay: calc(0.14s * var(--qs-spinner-tempo));
+}
+
+.qs-assistant-spinner__dots > span:nth-child(3) {
+  animation-delay: calc(0.28s * var(--qs-spinner-tempo));
+}
+
+@keyframes qs-assistant-spinner-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.32;
+    transform: none;
+  }
+  28% {
+    opacity: 1;
+    transform: translateY(-0.26em);
+  }
+}
+
+.qs-assistant-spinner__label {
+  font-size: 0.875rem;
+  opacity: 0.72;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-assistant-spinner__ring,
+  .qs-assistant-spinner__dots > span {
+    animation: none;
+  }
+
+  .qs-assistant-spinner__ring circle:last-child {
+    stroke-dasharray: 30 100;
+  }
+
+  .qs-assistant-spinner__dots > span {
+    opacity: 0.7;
+    transform: none;
+  }
+}
+
 /* Help FAB - bottom-right launcher + panel (CapitalRail pattern) */
 .qs-agent-launcher {
   position: fixed;
