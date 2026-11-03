@@ -18,7 +18,6 @@ const HARD_MAX_MS = 8500;
 const NAME_SWEEP_MS = 1500;
 const TAGLINE_DELAY_MS = 320;
 const HOLD_MS = 560;
-const MARK_DELAY_MS = 90;
 
 type Phase = "checking" | "playing" | "exiting" | "done";
 
@@ -58,8 +57,8 @@ function isLowPowerDevice(): boolean {
 }
 
 /**
- * Single brand path: 3D seal stamps, crossfades to one crisp SVG mark,
- * then HTML name + tagline (no second mark, no canvas wordmark).
+ * Single brand path: the same QuoteSealMark SVG stamps in with atmosphere
+ * behind it - never a different 3D glyph. Then name + tagline.
  */
 export function OpeningIntro({ children }: { children: ReactNode }) {
   const reducedMotion = useSyncExternalStore(
@@ -70,7 +69,7 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
   const [playPhase, setPhase] = useState<Exclude<Phase, "checking">>("playing");
   const phase: Phase =
     reducedMotion === null ? "checking" : reducedMotion ? "done" : playPhase;
-  const [markVisible, setMarkVisible] = useState(false);
+  const [markActive, setMarkActive] = useState(false);
   const [nameVisible, setNameVisible] = useState(false);
   const [taglineVisible, setTaglineVisible] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,20 +122,24 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Strict Mode remount: clear prior scene + HTML labels so nothing stacks.
     handleRef.current?.dispose();
     handleRef.current = null;
-    setMarkVisible(false);
+    setMarkActive(false);
     setNameVisible(false);
     setTaglineVisible(false);
 
     let cancelled = false;
-    let markTimer = 0;
+    let stampTimer = 0;
     let taglineTimer = 0;
     let holdTimer = 0;
     const hardTimer = window.setTimeout(() => {
       if (!cancelled) complete();
     }, HARD_MAX_MS);
+
+    // Same SVG mark from frame 0 - stamp motion is CSS, not a 3D mesh.
+    stampTimer = window.setTimeout(() => {
+      if (!cancelled) setMarkActive(true);
+    }, 40);
 
     try {
       handleRef.current = mountIntroScene({
@@ -145,18 +148,14 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
         lowPower: isLowPowerDevice(),
         onReveal: () => {
           if (cancelled) return;
-          markTimer = window.setTimeout(() => {
+          setNameVisible(true);
+          taglineTimer = window.setTimeout(() => {
             if (cancelled) return;
-            setMarkVisible(true);
-            setNameVisible(true);
-            taglineTimer = window.setTimeout(() => {
-              if (cancelled) return;
-              setTaglineVisible(true);
-              holdTimer = window.setTimeout(() => {
-                if (!cancelled) complete();
-              }, NAME_SWEEP_MS + HOLD_MS);
-            }, TAGLINE_DELAY_MS);
-          }, MARK_DELAY_MS);
+            setTaglineVisible(true);
+            holdTimer = window.setTimeout(() => {
+              if (!cancelled) complete();
+            }, NAME_SWEEP_MS + HOLD_MS);
+          }, TAGLINE_DELAY_MS);
         },
         onComplete: () => {},
       });
@@ -167,7 +166,7 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
       window.clearTimeout(hardTimer);
-      window.clearTimeout(markTimer);
+      window.clearTimeout(stampTimer);
       window.clearTimeout(taglineTimer);
       window.clearTimeout(holdTimer);
       handleRef.current?.dispose();
@@ -223,8 +222,8 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
         >
           <canvas ref={canvasRef} className="qs-intro-canvas" />
           <div
-            className={`qs-intro-mark ${markVisible ? "is-visible" : ""}`}
-            aria-hidden={!markVisible}
+            className={`qs-intro-mark ${markActive ? "is-stamping" : ""}`}
+            aria-hidden
           >
             <QuoteSealMark
               className="qs-intro-mark-svg"

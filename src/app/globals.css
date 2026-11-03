@@ -539,17 +539,15 @@ body.qs-intro-active {
   z-index: 1;
   width: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
   height: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
-  transform: translate(-50%, -50%) scale(0.92);
+  transform: translate(-50%, -50%) scale(0.55) rotate(-40deg);
   opacity: 0;
   pointer-events: none;
-  transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
+  will-change: transform, opacity, filter;
 }
 
-.qs-intro-mark.is-visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+.qs-intro-mark.is-stamping {
+  animation: qsIntroMarkStamp 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .qs-intro-mark-svg {
@@ -560,12 +558,41 @@ body.qs-intro-active {
   overflow: visible;
 }
 
+@keyframes qsIntroMarkStamp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 18vh)) scale(0.55) rotate(-220deg);
+    filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
+  }
+  42% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06) rotate(0deg);
+    filter: drop-shadow(0 0 28px rgba(90, 238, 190, 0.45));
+  }
+  58% {
+    transform: translate(-50%, -50%) scale(0.97) rotate(0deg);
+    filter: drop-shadow(0 0 18px rgba(90, 238, 190, 0.28));
+  }
+  78% {
+    transform: translate(-50%, -50%) scale(1.02) rotate(0deg);
+    filter: drop-shadow(0 0 32px rgba(90, 238, 190, 0.4));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 22px rgba(90, 238, 190, 0.32));
+  }
+}
+
 .qs-intro-overlay.is-exiting .qs-intro-mark {
+  animation: none;
   opacity: 0;
   transform: translate(-50%, -56%) scale(1.04);
+  filter: drop-shadow(0 0 12px rgba(90, 238, 190, 0.15));
   transition:
     opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.45s ease;
 }
 
 .qs-intro-copy {
@@ -1435,6 +1462,7 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .qs-intro-mark.is-stamping,
   .qs-intro-name.is-visible .qs-intro-name-text,
   .animated-gradient-word,
   .page-title-flow,
@@ -1454,6 +1482,12 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
   .qs-placeholder-caret,
   .how-it-works-collapse {
     animation: none !important;
+  }
+
+  .qs-intro-mark.is-stamping {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter: none;
   }
 
   .how-it-works-collapse {
