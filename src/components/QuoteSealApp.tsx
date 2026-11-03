@@ -7,9 +7,18 @@ import {
   type FlowOutcome,
   type FlowPhase,
 } from "@/components/FlowDiagram";
+import { ForAgentsSection } from "@/components/ForAgentsSection";
 import { HelpWidget } from "@/components/HelpWidget";
 import { MandateChat } from "@/components/MandateChat";
 import { SiteFooter } from "@/components/SiteFooter";
+import {
+  HEALTH_CURL,
+  MANDATE_CURL,
+  OPENAPI_PATH,
+  QUOTESEAL_LIVE_BASE,
+  RUN_CURL,
+  X402_CURL,
+} from "@/shared/agent/agent-api-docs";
 import { BrandGlowTitle } from "@/shared/ui/GlowTitle";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 import { SiteHeader, type SiteHeaderStatus } from "@/shared/ui/SiteHeader";
@@ -19,6 +28,7 @@ const NAV_LINKS = [
   { href: "#how", label: "How it works" },
   { href: "#flow", label: "Flow" },
   { href: "#developers", label: "For developers" },
+  { href: "#agents", label: "Agents" },
 ] as const;
 
 const HOW_STEPS = [
@@ -47,7 +57,6 @@ export function QuoteSealApp() {
     tone: "pending",
     label: "Checking…",
   });
-  const [devOpen, setDevOpen] = useState(true);
   const [flowPhase, setFlowPhase] = useState<FlowPhase>("idle");
   const [flowOutcome, setFlowOutcome] = useState<FlowOutcome | null>(null);
 
@@ -209,60 +218,84 @@ export function QuoteSealApp() {
           className="qs-section scroll-mt-28"
         >
           <p className="section-kicker m-0">For developers</p>
-          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h2
-                id="developers-title"
-                className="m-0 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
-              >
-                Agent and API notes
-              </h2>
-              <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-                Optional detail for integrators. End users can ignore this section.
+          <h2
+            id="developers-title"
+            className="m-0 mt-2 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
+          >
+            Agent and API notes
+          </h2>
+          <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
+            Always-on integrator surface: curls, env names (no secrets), OpenAPI,
+            and optional MCP. Product chat above stays jargon-free.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
+              <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
+                Build a plan
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                POST /api/mandate turns a plain request into a sealed plan. Uses
+                OpenServ when SERV_API_KEY is set; otherwise a local parser.
               </p>
-            </div>
-            <button
-              type="button"
-              className="qs-btn-secondary rounded-xl px-3.5 py-2 text-sm font-semibold"
-              aria-expanded={devOpen}
-              onClick={() => setDevOpen((v) => !v)}
-            >
-              {devOpen ? "Hide details" : "Show details"}
-            </button>
+            </article>
+            <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
+              <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
+                Sealed run
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                POST /api/run approves the session and buys sample local quotes
+                under the seal. Overspend is refused at pay time.
+              </p>
+            </article>
+            <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
+              <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
+                Health + fixtures
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                GET /api/health and /api/x402/quote/{"{tier}"}. Kite Passport is
+                optional - demo stays zero-spend unless you opt into sandbox.
+              </p>
+            </article>
           </div>
 
-          {devOpen ? (
-            <div className="qs-panel-reveal mt-5 grid gap-3 sm:grid-cols-3">
-              <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
-                <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
-                  Build a plan
-                </h3>
-                <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                  POST /api/mandate turns a plain request into a sealed plan.
-                  Uses OpenServ when configured; otherwise a local parser.
-                </p>
-              </article>
-              <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
-                <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
-                  Sealed run
-                </h3>
-                <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                  POST /api/run approves the session and buys sample local
-                  quotes under the seal. Overspend is refused at pay time.
-                </p>
-              </article>
-              <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
-                <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
-                  Kite Passport
-                </h3>
-                <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                  Health at /api/health. Live Passport rails are optional - this
-                  demo stays zero-spend unless you opt into sandbox yourself.
-                </p>
-              </article>
-            </div>
-          ) : null}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <a
+              href={OPENAPI_PATH}
+              className="inline-flex min-h-9 items-center text-[0.8rem] font-medium text-[rgba(117,217,231,0.85)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenAPI 3
+            </a>
+            <a
+              href="#agents"
+              className="inline-flex min-h-9 items-center text-[0.8rem] font-medium text-[rgba(117,217,231,0.85)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+            >
+              Agents section
+            </a>
+            <p className="m-0 font-mono text-[0.68rem] text-[var(--muted)]">
+              $BASE_URL = {QUOTESEAL_LIVE_BASE}
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-2.5 lg:grid-cols-2">
+            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+              {HEALTH_CURL}
+            </pre>
+            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+              {MANDATE_CURL}
+            </pre>
+            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+              {RUN_CURL}
+            </pre>
+            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+              {X402_CURL}
+            </pre>
+          </div>
         </section>
+
+        <ForAgentsSection />
 
         <SiteFooter />
       </main>

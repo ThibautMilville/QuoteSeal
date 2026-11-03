@@ -462,7 +462,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
           <button
             type="submit"
             disabled={busy !== null || !draft.trim()}
-            className="qs-btn-primary grid h-11 w-11 shrink-0 place-items-center rounded-xl disabled:opacity-40"
+            className="qs-btn-primary box-border grid h-11 w-11 shrink-0 place-items-center rounded-xl p-0 disabled:opacity-40"
             aria-label="Send"
           >
             <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>

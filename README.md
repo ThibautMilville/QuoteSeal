@@ -99,6 +99,28 @@ Local merchants (x402-shaped fixtures):
 | `/api/x402/quote/standard` | Seine Film Pro | 0.8 |
 | `/api/x402/quote/premium` | Atlas Solar Shield | 1.5 |
 
+### Agent surface
+
+| Piece | Where |
+| --- | --- |
+| OpenAPI 3 | [`/openapi.yaml`](./public/openapi.yaml) (live: https://quoteseal.ozc.fr/openapi.yaml) |
+| UI | Sections `#developers` and `#agents` |
+| MCP | `npm run mcp` - tools `quote_seal_mandate`, `quote_seal_run`, `quote_seal_health` |
+
+```bash
+npm run mcp   # QUOTESEAL_BASE_URL defaults to https://quoteseal.ozc.fr
+```
+
+```bash
+BASE_URL=https://quoteseal.ozc.fr
+
+curl -s "$BASE_URL/api/health"
+
+curl -s -X POST "$BASE_URL/api/mandate" \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"40 m2 solar film in Lyon, 3 USDC total, 1 USDC max per quote"}'
+```
+
 ---
 
 ## Local setup
@@ -119,6 +141,7 @@ Useful scripts:
 npm run typecheck
 npm run build
 npm run lint
+npm run mcp
 ```
 
 ### Environment variables
@@ -131,6 +154,7 @@ Copy `.env.example` to `.env.local`. **Never commit `.env.local`.** No real secr
 | `SERV_BASE_URL` | No | Defaults to OpenServ inference API |
 | `SERV_MODEL_FAST` / `SMALL` / `LARGE` | No | Model routing tiers |
 | `NEXT_PUBLIC_APP_URL` | No | Public origin for x402 resource URLs (default `http://localhost:3010`) |
+| `QUOTESEAL_BASE_URL` | No | MCP HTTP target (default `https://quoteseal.ozc.fr`) |
 | `KPASS_BIN` | No | Absolute path to `kpass` if it is not on `PATH` |
 
 Optional Kite Passport CLI:

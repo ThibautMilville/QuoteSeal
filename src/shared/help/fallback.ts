@@ -47,9 +47,9 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
     },
   },
   {
-    pattern: /\bapi|developer|integrat|endpoint\b/i,
+    pattern: /\bapi|developer|integrat|endpoint|mcp|agent|openapi\b/i,
     reply: {
-      text: "Integrators can use POST /api/mandate to compile a plan and POST /api/run to buy under the seal. See the For developers section on this page for short notes.",
+      text: "Integrators can use POST /api/mandate and POST /api/run, plus OpenAPI at /openapi.yaml. See For developers and Agents on this page for curls and npm run mcp - the main chat stays product-only.",
     },
   },
   {

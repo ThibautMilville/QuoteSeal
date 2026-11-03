@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: QuoteSeal Agent API
+  description: |
+    Sealed quote buys for agents and integrators. Compile a plain-English request
+    into a spending seal (POST /api/mandate), then buy fixture quotes under that
+    seal (POST /api/run). Overspend is refused at pay time. Raising the cap always
+    needs a new approval.
+
+    Demo safety:
+    - No real money moves on the default path. Merchants are local x402-shaped fixtures.
+    - Optional SERV_API_KEY enables live intent compile; without it a local parser runs.
+    - Optional Kite Passport stays zero-spend unless you opt into a sandbox session.
+
+    Security (honest):
+    - No API auth today. Treat the base URL as a public demo surface.
+    - Prefer server-to-server / curl / MCP. Do not put secrets in client bundles.
+  version: "0.1.0"
+  contact:
+    name: QuoteSeal
+    url: https://quoteseal.ozc.fr
+servers:
+  - url: https://quoteseal.ozc.fr
+    description: Production
+  - url: "{baseUrl}"
+    description: Any deployed host
+    variables:
+      baseUrl:
+        default: https://quoteseal.ozc.fr
+paths:
+  /api/health:
+    get:
+      operationId: health
+      summary: App readiness and optional Kite / SERV hints
+      tags: [health]
+      responses:
+        "200":
+          description: Health payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/mandate:
+    post:
+      operationId: mandate
+      summary: Compile free text into a sealed MandatePlan
+      description: |
+        Turns a short natural-language quote request into mandate caps, session
+        proposal, ordered plan steps, and rationale. Use the result with POST /api/run.
+      tags: [mandate]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MandateRequest"
+            example:
+              message: >-
+                Get up to 3 quotes for a 40 m2 solar-film install in Lyon.
+                Total budget 3 USDC. Max 1 USDC per quote. Valid for 2 hours.
+      responses:
+        "200":
+          description: Sealed plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MandatePlan"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/run:
+    post:
+      operationId: run
+      summary: Approve a plan and buy under the seal
+      description: |
+        Creates a demo_local sealed session and attempts fixture quote buys.
+        Events include session_approved, quote_paid, quote_blocked, raise_ask, done.
+        Accepts MandatePlan directly or `{ "plan": MandatePlan }`.
+      tags: [run]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/MandatePlan"
+                - $ref: "#/components/schemas/RunRequest"
+      responses:
+        "200":
+          description: Sealed run result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunResult"
+        "400":
+          description: Invalid mandate plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/x402/quote/{tier}:
+    get:
+      operationId: x402Quote
+      summary: Fixture merchant quote (x402-shaped)
+      description: |
+        Without X-PAYMENT returns 402 with an accepts challenge.
+        With a valid sealed session token, returns the fixture quote or 403 if
+        the seal would be broken.
+      tags: [x402]
+      parameters:
+        - name: tier
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [cheap, standard, premium]
+      responses:
+        "200":
+          description: Paid fixture quote
+        "402":
+          description: Payment required (challenge)
+        "403":
+          description: Seal refused the payment
+        "404":
+          description: Unknown tier
+components:
+  schemas:
+    MandateRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Plain-English job, city, size, and budget. Optional - server has a default demo message.
+    MandatePlan:
+      type: object
+      required: [mandate, session, plan, rationale, source]
+      properties:
+        mandate:
+          type: object
+          required:
+            - job
+            - city
+            - areaM2
+            - maxQuotes
+            - maxAmountPerTx
+            - maxTotalAmount
+            - ttlHours
+            - preferredTiers
+          properties:
+            job: { type: string }
+            city: { type: string }
+            areaM2: { type: number }
+            maxQuotes: { type: integer, minimum: 1, maximum: 3 }
+            maxAmountPerTx: { type: number }
+            maxTotalAmount: { type: number }
+            ttlHours: { type: number }
+            preferredTiers:
+              type: array
+              items:
+                type: string
+                enum: [cheap, standard, premium]
+        session:
+          type: object
+          required:
+            - taskSummary
+            - maxAmountPerTx
+            - maxTotalAmount
+            - ttlHours
+            - assets
+            - allowedEndpoints
+            - mode
+          properties:
+            taskSummary: { type: string }
+            maxAmountPerTx: { type: number }
+            maxTotalAmount: { type: number }
+            ttlHours: { type: number }
+            assets:
+              type: string
+              enum: [USDC]
+            allowedEndpoints:
+              type: array
+              items: { type: string }
+            mode:
+              type: string
+              enum: [demo_local, kite_sandbox]
+        plan:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [tier, reason, expectedPriceUsdc]
+            properties:
+              tier:
+                type: string
+                enum: [cheap, standard, premium]
+              reason: { type: string }
+              expectedPriceUsdc: { type: number }
+        rationale: { type: string }
+        source:
+          type: string
+          enum: [serv, fallback]
+    RunRequest:
+      type: object
+      required: [plan]
+      properties:
+        plan:
+          $ref: "#/components/schemas/MandatePlan"
+    RunResult:
+      type: object
+      required: [session, events]
+      properties:
+        session:
+          type: object
+          additionalProperties: true
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    HealthResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        app: { type: string }
+        track: { type: string }
+        mode: { type: string }
+        serv: { type: object, additionalProperties: true }
+        kite: { type: object, additionalProperties: true }
+        merchants:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        note: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        details: { type: object, additionalProperties: true }
+tags:
+  - name: health
+    description: Readiness probe
+  - name: mandate
+    description: Free text to sealed plan
+  - name: run
+    description: Sealed session + buy / block / raise
+  - name: x402
+    description: Fixture merchants

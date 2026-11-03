@@ -44,7 +44,21 @@ export function SiteFooter() {
           </a>
           <a
             className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
-            href="https://github.com/ThibautMilville/quote-seal"
+            href="#agents"
+          >
+            Agents
+          </a>
+          <a
+            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            href="/openapi.yaml"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenAPI
+          </a>
+          <a
+            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            href="https://github.com/ThibautMilville/QuoteSeal"
             target="_blank"
             rel="noopener noreferrer"
           >
