@@ -6,6 +6,7 @@ import {
   useId,
   useRef,
   useState,
+  useSyncExternalStore,
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
@@ -19,26 +20,35 @@ import {
 } from "@/shared/ui/chat-copy";
 import { QS_HELP_HANDOFF } from "@/shared/help/fallback";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+import { useTypewriterPlaceholder } from "@/shared/ui/useTypewriterPlaceholder";
 import type { FlowOutcome, FlowPhase } from "@/components/FlowDiagram";
 
 const SCENARIOS = [
   {
     id: "default",
-    label: "Boulogne · 40 m2 · 1 USDC / quote",
+    label: "Lyon · solar film · 1 USDC / quote",
     message: DEFAULT_MANDATE_MESSAGE,
   },
   {
     id: "tight",
-    label: "Tighter seal · 0.5 USDC / quote",
+    label: "Nantes · office paint · 0.5 USDC / quote",
     message:
-      "Get 2 solar-film quotes for 40 m2 in Boulogne. Total budget 3 USDC. Max 0.5 USDC per quote. TTL 2h.",
+      "Get 2 office painting quotes for 80 m2 in Nantes. Total budget 3 USDC. Max 0.5 USDC per quote. Valid for 2 hours.",
   },
   {
     id: "wide",
-    label: "Wider seal · Paris · 2 USDC / quote",
+    label: "Paris · HVAC · 2 USDC / quote",
     message:
-      "Get 3 solar-film quotes for 40 m2 in Paris. Session budget 5 USDC. Max 2 USDC per quote. TTL 2h.",
+      "Get 3 HVAC install quotes for 120 m2 in Paris. Session budget 5 USDC. Max 2 USDC per quote. Valid for 2 hours.",
   },
+] as const;
+
+/** Rotating empty-input hints - diverse jobs and cities, not one demo locale. */
+const PLACEHOLDER_EXAMPLES = [
+  "40 m2 solar film in Lyon, 3 USDC total, 1 USDC max per quote",
+  "Office painting in Nantes, 2 quotes, 3 USDC total, 0.5 USDC max each",
+  "HVAC install in Paris, 5 USDC total, 2 USDC max per quote",
+  "Window replacement in Lille, 3 quotes, 4 USDC total, 1 USDC max each",
 ] as const;
 
 type ChatRole = "assistant" | "user";
@@ -54,7 +64,23 @@ type ChatMessage = {
 };
 
 const WELCOME =
-  "Hi - tell me what quotes you need. Include the job, city, size, and your spending seal (total budget and max per quote).\n\nExample: “40 m2 solar film in Boulogne, up to 3 quotes, 3 USDC total, 1 USDC max each.”";
+  "Hi - tell me what quotes you need. Any job, any city: include the work, place, size, and your spending seal (total budget and max per quote).\n\nExample: “40 m2 solar film in Lyon, up to 3 quotes, 3 USDC total, 1 USDC max each.”";
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+function getReducedMotion() {
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+function getServerReducedMotion() {
+  return false;
+}
 
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -72,11 +98,33 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
     { id: "welcome", role: "assistant", text: WELCOME },
   ]);
   const [draft, setDraft] = useState("");
+  const [focused, setFocused] = useState(false);
   const [plan, setPlan] = useState<MandatePlan | null>(null);
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   const [busy, setBusy] = useState<"compile" | "run" | null>(null);
   const flowRef = useRef(onFlowChange);
   flowRef.current = onFlowChange;
+
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    getServerReducedMotion,
+  );
+
+  /** Animate only while empty and unfocused so the real caret stays usable. */
+  const animatePlaceholder =
+    draft.length === 0 && busy === null && !focused && !reducedMotion;
+
+  const typedPlaceholder = useTypewriterPlaceholder({
+    examples: PLACEHOLDER_EXAMPLES,
+    active: animatePlaceholder,
+  });
+
+  const staticPlaceholder = PLACEHOLDER_EXAMPLES[0];
+  const nativePlaceholder =
+    draft.length === 0 && (reducedMotion || focused || busy !== null)
+      ? staticPlaceholder
+      : "";
 
   const emitFlow = useCallback(
     (phase: FlowPhase, outcome: FlowOutcome | null = null) => {
@@ -231,6 +279,8 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
   };
 
   const pendingPlan = plan;
+  const showOverlayPlaceholder =
+    animatePlaceholder && typedPlaceholder.length > 0;
 
   return (
     <section
@@ -247,8 +297,8 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
           Describe the quotes you need
         </h2>
         <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-          I prepare a spending seal, you approve, then quotes are bought under
-          that cap - nothing above the seal goes through.
+          Any job, any city - I prepare a spending seal, you approve, then quotes
+          are bought under that cap. Nothing above the seal goes through.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {SCENARIOS.map((s) => (
@@ -361,20 +411,34 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
         className="shrink-0 border-t border-[var(--line)] bg-[rgba(2,9,13,0.45)] px-3 py-3 sm:px-4"
       >
         <label className="sr-only" htmlFor="qs-chat-input">
-          Describe your quote request
+          Describe your quote request - job, city, size, and budget
         </label>
         <div className="flex items-end gap-2">
-          <textarea
-            id="qs-chat-input"
-            ref={inputRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={2}
-            disabled={busy !== null}
-            placeholder="e.g. 40 m2 solar film in Boulogne, 3 USDC total, 1 USDC max per quote"
-            className="min-h-[2.75rem] flex-1 resize-none rounded-xl border border-[var(--line)] bg-[var(--panel-2)] px-3.5 py-2.5 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(138,163,173,0.55)] focus:border-[rgba(91,238,190,0.45)] focus:shadow-[0_0_0_3px_rgba(91,238,190,0.12)] disabled:opacity-60"
-          />
+          <div className="relative min-h-[2.75rem] flex-1">
+            <textarea
+              id="qs-chat-input"
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              rows={2}
+              disabled={busy !== null}
+              placeholder={nativePlaceholder}
+              aria-describedby="qs-chat-hint"
+              className="relative z-0 min-h-[2.75rem] w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--panel-2)] px-3.5 py-2.5 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(138,163,173,0.55)] focus:border-[rgba(91,238,190,0.45)] focus:shadow-[0_0_0_3px_rgba(91,238,190,0.12)] disabled:opacity-60"
+            />
+            {showOverlayPlaceholder ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl px-3.5 py-2.5 text-sm leading-normal text-[rgba(138,163,173,0.55)]"
+              >
+                {typedPlaceholder}
+                <span className="qs-placeholder-caret ml-px inline-block h-[1em] w-px translate-y-[0.12em] bg-[rgba(138,163,173,0.65)] align-baseline" />
+              </span>
+            ) : null}
+          </div>
           <button
             type="submit"
             disabled={busy !== null || !draft.trim()}
@@ -392,7 +456,10 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
             </svg>
           </button>
         </div>
-        <p className="m-0 mt-2 font-mono text-[0.65rem] tracking-[0.06em] text-[var(--muted)]">
+        <p
+          id="qs-chat-hint"
+          className="m-0 mt-2 font-mono text-[0.65rem] tracking-[0.06em] text-[var(--muted)]"
+        >
           Enter to send · Shift+Enter for a new line · no real money in this demo
         </p>
       </form>

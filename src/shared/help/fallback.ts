@@ -55,7 +55,14 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
   {
     pattern: /\bstart|begin|demo|try|example\b/i,
     reply: {
-      text: "Open the main assistant above, pick a scenario chip (Boulogne works well), approve the seal, then watch buy / block / raise in the flow diagram.",
+      text: "Open the main assistant above, pick a scenario chip (Lyon, Nantes, or Paris), approve the seal, then watch buy / block / raise in the flow diagram.",
+      handoff: "",
+    },
+  },
+  {
+    pattern: /\bboulogne\b/i,
+    reply: {
+      text: "Boulogne was only an early demo city. QuoteSeal works for any job and city - try Lyon solar film, Nantes painting, or Paris HVAC from the chips above.",
       handoff: "",
     },
   },
@@ -67,8 +74,9 @@ export function looksLikeQuoteRequest(text: string): boolean {
   if (t.length < 12) return false;
   if (/\?/.test(t) && !/\bm2\b|\busdc\b|\bquote/i.test(t)) return false;
   return (
-    /\b(quote|quotes|solar|film|m2|m²|boulogne|paris|budget|usdc)\b/i.test(t) &&
-    /\d/.test(t)
+    /\b(quote|quotes|solar|film|hvac|paint|painting|window|roof|m2|m²|lyon|nantes|paris|lille|budget|usdc)\b/i.test(
+      t,
+    ) && /\d/.test(t)
   );
 }
 

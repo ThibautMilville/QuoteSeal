@@ -19,7 +19,7 @@ export const QUOTE_CATALOG: Record<QuoteTier, QuoteOffer> = {
     pricePerM2: 42,
     leadDays: 21,
     exclusions: ["scaffolding", "high-rise access"],
-    summary: "Entry quote - longer lead time, basic film stack.",
+    summary: "Entry quote - longer lead time, basic scope.",
   },
   standard: {
     tier: "standard",
@@ -28,7 +28,7 @@ export const QUOTE_CATALOG: Record<QuoteTier, QuoteOffer> = {
     pricePerM2: 58,
     leadDays: 10,
     exclusions: ["weekend install"],
-    summary: "Balanced quote - mid film, weekday crew.",
+    summary: "Balanced quote - mid scope, weekday crew.",
   },
   premium: {
     tier: "premium",
@@ -37,7 +37,7 @@ export const QUOTE_CATALOG: Record<QuoteTier, QuoteOffer> = {
     pricePerM2: 79,
     leadDays: 5,
     exclusions: [],
-    summary: "Fast premium quote - exceeds default 1 USDC / tx seal.",
+    summary: "Fast premium quote - often above a 1 USDC per-quote seal.",
   },
 };
 

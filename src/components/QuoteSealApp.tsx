@@ -26,7 +26,7 @@ const HOW_STEPS = [
     n: "01",
     tag: "Describe",
     title: "Describe the job",
-    body: "Tell the assistant what quotes you need - job, city, size, and your spending limits.",
+    body: "Say what you need quotes for - any trade, city, size, and your spending limits.",
   },
   {
     n: "02",
@@ -38,7 +38,7 @@ const HOW_STEPS = [
     n: "03",
     tag: "Buy",
     title: "Quotes under the cap",
-    body: "Approved quotes pay. Anything above the seal is blocked - you may need a new approval to raise the limit.",
+    body: "Allowed quotes pay. Anything above the seal is blocked - raising the limit always needs a new approval.",
   },
 ] as const;
 
@@ -100,9 +100,9 @@ export function QuoteSealApp() {
             </h1>
           </div>
           <p className="mt-3 max-w-2xl text-[0.95rem] leading-snug text-[var(--muted)] sm:text-[1.02rem]">
-            Tell the assistant what you need. Approve a spending seal. Quotes
-            within the cap are paid - anything above is blocked. No real money
-            moves in this demo.
+            Any job, any city, any budget. Tell the assistant what quotes you
+            need, approve a spending seal, and buys stay inside the cap -
+            anything above is blocked. No real money moves in this demo.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <a
@@ -149,7 +149,8 @@ export function QuoteSealApp() {
             From a sentence to sealed quote buys
           </h2>
           <p className="relative m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-            One clear job: describe, approve, buy under the seal.
+            One clear loop for any quote request: describe, approve, buy under
+            the seal.
           </p>
           <ol className="qs-step-stagger relative m-0 mt-5 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
             {HOW_STEPS.map((step) => (
@@ -197,7 +198,7 @@ export function QuoteSealApp() {
               embedded
               phase={flowPhase}
               outcome={flowOutcome}
-              title="Sealed agent spending"
+              title="Sealed spending flow"
             />
           </div>
         </section>
@@ -234,10 +235,10 @@ export function QuoteSealApp() {
             <div className="qs-panel-reveal mt-5 grid gap-3 sm:grid-cols-3">
               <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
                 <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
-                  Intent compile
+                  Build a plan
                 </h3>
                 <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                  POST /api/mandate turns natural language into a sealed plan.
+                  POST /api/mandate turns a plain request into a sealed plan.
                   Uses OpenServ when configured; otherwise a local parser.
                 </p>
               </article>
@@ -246,8 +247,8 @@ export function QuoteSealApp() {
                   Sealed run
                 </h3>
                 <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                  POST /api/run approves the session and buys local x402 quote
-                  fixtures under the seal. Overspend is refused at pay time.
+                  POST /api/run approves the session and buys sample local
+                  quotes under the seal. Overspend is refused at pay time.
                 </p>
               </article>
               <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
@@ -256,7 +257,7 @@ export function QuoteSealApp() {
                 </h3>
                 <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
                   Health at /api/health. Live Passport rails are optional - this
-                  demo stays zero-spend until you opt into sandbox.
+                  demo stays zero-spend unless you opt into sandbox yourself.
                 </p>
               </article>
             </div>

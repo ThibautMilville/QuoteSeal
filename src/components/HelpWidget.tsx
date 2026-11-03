@@ -18,8 +18,11 @@ type HelpMessage =
 const SUGGESTIONS = [
   "How does QuoteSeal work?",
   "What is a spending seal?",
-  "Try the Boulogne demo",
+  "Try a sample quote job",
 ] as const;
+
+const SAMPLE_QUOTE_HANDOFF =
+  "40 m2 solar film in Lyon, 3 quotes, 3 USDC total, 1 USDC max each";
 
 const TEASERS = [
   "Need a quick tip? Ask me about the seal.",
@@ -336,10 +339,8 @@ export function HelpWidget() {
                 type="button"
                 disabled={pending}
                 onClick={() => {
-                  if (suggestion.includes("Boulogne")) {
-                    void ask(
-                      "40 m2 solar film in Boulogne, 3 quotes, 3 USDC total, 1 USDC max each",
-                    );
+                  if (suggestion.includes("sample quote")) {
+                    void ask(SAMPLE_QUOTE_HANDOFF);
                   } else {
                     void ask(suggestion);
                   }

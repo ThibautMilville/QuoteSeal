@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "QuoteSeal - sealed quote buys",
   description:
-    "Describe the quotes you need, approve a spending seal, and buy under the cap. Anything above the seal is blocked.",
+    "Any job, any city: describe the quotes you need, approve a spending seal, and buy under the cap. Anything above the seal is blocked.",
   applicationName: "QuoteSeal",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],

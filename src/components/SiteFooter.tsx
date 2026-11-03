@@ -12,8 +12,8 @@ export function SiteFooter() {
             </p>
           </div>
           <p className="m-0 mt-2 text-sm leading-snug text-[var(--muted)]">
-            Describe the quotes you need. Approve a spending seal. Buys stay
-            inside the cap.
+            Any job, any city. Describe the quotes you need, approve a spending
+            seal, and buys stay inside the cap.
           </p>
           <p className="m-0 mt-3 font-mono text-[0.68rem] leading-relaxed text-[var(--muted)]">
             No real money · no custody · demo quotes only

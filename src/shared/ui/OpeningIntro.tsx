@@ -223,7 +223,7 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
               className={`qs-intro-tagline ${taglineVisible ? "is-visible" : ""}`}
               aria-hidden={!taglineVisible}
             >
-              Sealed quote buys for agents
+              Sealed quote buys - any job, any city
             </p>
           </div>
           <button

@@ -14,6 +14,32 @@ function num(match: RegExpMatchArray | null, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function parseJob(text: string, fallback: string): string {
+  if (/solar\s*film|film\s*solaire|film\b/i.test(text)) {
+    return "solar film install";
+  }
+  if (/\bhvac\b|air\s*condition|climatis/i.test(text)) {
+    return "HVAC install";
+  }
+  if (/\bpaint|peinture|painting\b/i.test(text)) {
+    return "office painting";
+  }
+  if (/\bwindow|fen[eê]tre|vitrage\b/i.test(text)) {
+    return "window replacement";
+  }
+  if (/\broof|toiture\b/i.test(text)) {
+    return "roof repair";
+  }
+  const quoted = text.match(
+    /(?:quotes?\s+for|devis\s+(?:pour|de))\s+([^,.]+?)(?:\s+in\s+|\s+à\s+|,|\.|$)/i,
+  );
+  if (quoted?.[1]) {
+    const job = quoted[1].replace(/\d+\s*m[²2]/i, "").trim();
+    if (job.length >= 3) return job;
+  }
+  return fallback;
+}
+
 /** Deterministic NL parse when SERV is offline - keeps demos reproducible. */
 export function parseMandateFallback(message: string): Mandate {
   const base = defaultMandate();
@@ -50,7 +76,7 @@ export function parseMandateFallback(message: string): Mandate {
 
   return {
     ...base,
-    job: /film/i.test(text) ? "solar film install" : base.job,
+    job: parseJob(text, base.job),
     city,
     areaM2: area,
     maxQuotes,

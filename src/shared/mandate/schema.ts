@@ -44,13 +44,14 @@ export const MandatePlanSchema = z.object({
 
 export type MandatePlan = z.infer<typeof MandatePlanSchema>;
 
+/** Default demo mandate - one of several examples; product is job/city agnostic. */
 export const DEFAULT_MANDATE_MESSAGE =
-  "Get up to 3 quotes for a 40 m2 solar-film install in Boulogne. Total budget 3 USDC. Max 1 USDC per quote. Valid for 2 hours.";
+  "Get up to 3 quotes for a 40 m2 solar-film install in Lyon. Total budget 3 USDC. Max 1 USDC per quote. Valid for 2 hours.";
 
 export function defaultMandate(): Mandate {
   return {
     job: "solar film install",
-    city: "Boulogne",
+    city: "Lyon",
     areaM2: 40,
     maxQuotes: 3,
     maxAmountPerTx: 1,

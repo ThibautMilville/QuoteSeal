@@ -357,6 +357,21 @@ body::before {
   animation: qsSealPulse 2.2s ease-in-out infinite;
 }
 
+.qs-placeholder-caret {
+  animation: qsPlaceholderCaret 1s steps(1, end) infinite;
+}
+
+@keyframes qsPlaceholderCaret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes qsPageEnter {
   from {
     opacity: 0;
@@ -1224,7 +1239,8 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
   .qs-diagram-hub-ring,
   .qs-diagram-pulse,
   .qs-agent-launcher:not(.is-open) .qs-agent-launcher-icon,
-  .qs-agent-launcher:not(.is-open) .qs-agent-launcher-ring {
+  .qs-agent-launcher:not(.is-open) .qs-agent-launcher-ring,
+  .qs-placeholder-caret {
     animation: none !important;
   }
 
