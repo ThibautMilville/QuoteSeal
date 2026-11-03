@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { CustomCursor } from "@/shared/ui/CustomCursor";
 import { OpeningIntro } from "@/shared/ui/OpeningIntro";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: introBootScript }} />
       </head>
       <body className="min-h-full bg-[#02090d] font-sans text-[#f5fbfd] antialiased">
+        <CustomCursor />
         <OpeningIntro>{children}</OpeningIntro>
       </body>
     </html>

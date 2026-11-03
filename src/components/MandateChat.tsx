@@ -17,6 +17,7 @@ import {
   narrateRunForChat,
   tierLabel,
 } from "@/shared/ui/chat-copy";
+import { QS_HELP_HANDOFF } from "@/shared/help/fallback";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 import type { FlowOutcome, FlowPhase } from "@/components/FlowDiagram";
 
@@ -93,6 +94,24 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
   useEffect(() => {
     scrollToBottom();
   }, [messages, busy, scrollToBottom]);
+
+  useEffect(() => {
+    const onHandoff = (event: Event) => {
+      const detail = (event as CustomEvent<{ message?: string }>).detail;
+      const message = detail?.message?.trim() ?? "";
+      if (message) {
+        setDraft(message);
+        window.requestAnimationFrame(() => {
+          inputRef.current?.focus();
+          inputRef.current?.setSelectionRange(message.length, message.length);
+        });
+      } else {
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener(QS_HELP_HANDOFF, onHandoff);
+    return () => window.removeEventListener(QS_HELP_HANDOFF, onHandoff);
+  }, []);
 
   const push = useCallback((msg: Omit<ChatMessage, "id"> & { id?: string }) => {
     setMessages((prev) => [...prev, { ...msg, id: msg.id ?? uid(msg.role) }]);

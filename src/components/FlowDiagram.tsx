@@ -32,11 +32,57 @@ type StageId = "describe" | "seal" | "buy";
 
 type DiagramRect = { x: number; y: number; w: number; h: number };
 
+/** Shared SVG geometry - three equal columns across the viewBox. */
+const VB_W = 644;
+const VB_H = 288;
+const COL_MARGIN_X = 22;
+const NODE_W = 100;
+const NODE_H = 52;
+const NODE_Y = 52;
+const ZONE_W = 180;
+const ZONE_H = 72;
+const ZONE_Y = 184;
+const CHIP_Y = 266;
+const CHIP_H = 16;
+const BRANCH_CTRL_Y = 158;
+
+const COL_SPAN = VB_W - COL_MARGIN_X * 2;
+const COL_GAP = (COL_SPAN - ZONE_W * 3) / 2;
+const COL_X = [0, 1, 2].map((i) => COL_MARGIN_X + i * (ZONE_W + COL_GAP));
+const COL_CENTER = COL_X.map((x) => x + ZONE_W / 2);
+
 const NODE: Record<StageId, DiagramRect> = {
-  describe: { x: 36, y: 52, w: 100, h: 52 },
-  seal: { x: 212, y: 52, w: 100, h: 52 },
-  buy: { x: 388, y: 52, w: 100, h: 52 },
+  describe: {
+    x: COL_CENTER[0] - NODE_W / 2,
+    y: NODE_Y,
+    w: NODE_W,
+    h: NODE_H,
+  },
+  seal: {
+    x: COL_CENTER[1] - NODE_W / 2,
+    y: NODE_Y,
+    w: NODE_W,
+    h: NODE_H,
+  },
+  buy: {
+    x: COL_CENTER[2] - NODE_W / 2,
+    y: NODE_Y,
+    w: NODE_W,
+    h: NODE_H,
+  },
 };
+
+const ZONE: Record<"paid" | "blocked" | "raise", DiagramRect> = {
+  paid: { x: COL_X[0], y: ZONE_Y, w: ZONE_W, h: ZONE_H },
+  blocked: { x: COL_X[1], y: ZONE_Y, w: ZONE_W, h: ZONE_H },
+  raise: { x: COL_X[2], y: ZONE_Y, w: ZONE_W, h: ZONE_H },
+};
+
+const CHIP: { x: number; w: number; label: string }[] = [
+  { x: COL_CENTER[0] - 60, w: 120, label: "1. Describe job" },
+  { x: COL_CENTER[1] - 60, w: 120, label: "2. Approve seal" },
+  { x: COL_CENTER[2] - 80, w: 160, label: "3. Buy / Block / Raise" },
+];
 
 const STAGES: { id: StageId; label: string; sub: string }[] = [
   { id: "describe", label: "Describe", sub: "your job" },
@@ -133,14 +179,23 @@ export function FlowDiagram({
     Boolean(outcome && outcome.raiseAsked) || phase === "idle";
 
   const buyC = center(NODE.buy);
+  const buyBottomY = NODE.buy.y + NODE.buy.h;
   const flowPath = STAGES.map((stage, index) => {
     const c = center(NODE[stage.id]);
     return `${index === 0 ? "M" : "L"}${c.x},${c.y}`;
   }).join(" ");
 
-  const paidPath = `M${buyC.x},${NODE.buy.y + NODE.buy.h} C${buyC.x},${158} 120,158 108,184`;
-  const blockedPath = `M${buyC.x},${NODE.buy.y + NODE.buy.h} C${buyC.x},${158} 320,158 322,184`;
-  const raisePath = `M${buyC.x},${NODE.buy.y + NODE.buy.h} C${buyC.x},${158} 520,158 536,184`;
+  // Fan from Buy into the three column centers with mirrored control offsets.
+  const branchTo = (col: number) => {
+    const tx = COL_CENTER[col];
+    const dx = tx - buyC.x;
+    const c1x = buyC.x + dx * 0.18;
+    const c2x = buyC.x + dx * 0.72;
+    return `M${buyC.x},${buyBottomY} C${c1x},${BRANCH_CTRL_Y} ${c2x},${BRANCH_CTRL_Y + 8} ${tx},${ZONE_Y}`;
+  };
+  const paidPath = branchTo(0);
+  const blockedPath = branchTo(1);
+  const raisePath = branchTo(2);
 
   const paidTitle =
     outcome && isDone
@@ -228,7 +283,7 @@ export function FlowDiagram({
       <div className="hidden overflow-hidden sm:block">
         <svg
           className="qs-diagram-svg mx-auto block h-auto w-full max-w-[900px]"
-          viewBox="0 0 644 288"
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
           preserveAspectRatio="xMidYMid meet"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden
@@ -435,199 +490,118 @@ export function FlowDiagram({
             </circle>
           ) : null}
 
-          <g
-            className="qs-diagram-node"
-            style={{ "--diagram-delay": "0.42s" } as CSSProperties}
-          >
-            <rect
-              className={
-                highlightPaid
-                  ? "qs-diagram-zone qs-diagram-zone-ok"
-                  : "qs-diagram-zone"
-              }
-              x="18"
-              y="184"
-              width="180"
-              height="72"
-              rx="14"
-            />
-            <text
-              className="qs-diagram-zone-label"
-              x="108"
-              y="202"
-              textAnchor="middle"
-            >
-              Buy
-            </text>
-            <text
-              className="qs-diagram-outcome"
-              x="108"
-              y="224"
-              textAnchor="middle"
-            >
-              {paidTitle}
-            </text>
-            <text
-              className="qs-diagram-outcome-sub"
-              x="108"
-              y="240"
-              textAnchor="middle"
-            >
-              {paidSub}
-            </text>
-          </g>
+          {(
+            [
+              {
+                key: "paid" as const,
+                delay: "0.42s",
+                highlight: highlightPaid,
+                activeClass: "qs-diagram-zone qs-diagram-zone-ok",
+                eyebrow: "Buy",
+                title: paidTitle,
+                sub: paidSub,
+              },
+              {
+                key: "blocked" as const,
+                delay: "0.5s",
+                highlight: highlightBlocked,
+                activeClass: "qs-diagram-zone qs-diagram-zone-blocked",
+                eyebrow: "Block",
+                title: blockedTitle,
+                sub: blockedSub,
+              },
+              {
+                key: "raise" as const,
+                delay: "0.58s",
+                highlight: highlightRaise,
+                activeClass: "qs-diagram-zone qs-diagram-zone-raise",
+                eyebrow: "Raise",
+                title: raiseTitle,
+                sub: raiseSub,
+              },
+            ] as const
+          ).map((zone) => {
+            const rect = ZONE[zone.key];
+            const cx = rect.x + rect.w / 2;
+            return (
+              <g
+                key={zone.key}
+                className="qs-diagram-node"
+                style={{ "--diagram-delay": zone.delay } as CSSProperties}
+              >
+                <rect
+                  className={zone.highlight ? zone.activeClass : "qs-diagram-zone"}
+                  x={rect.x}
+                  y={rect.y}
+                  width={rect.w}
+                  height={rect.h}
+                  rx={14}
+                />
+                <text
+                  className="qs-diagram-zone-label"
+                  x={cx}
+                  y={rect.y + 18}
+                  textAnchor="middle"
+                >
+                  {zone.eyebrow}
+                </text>
+                <text
+                  className="qs-diagram-outcome"
+                  x={cx}
+                  y={rect.y + 40}
+                  textAnchor="middle"
+                >
+                  {zone.title}
+                </text>
+                <text
+                  className="qs-diagram-outcome-sub"
+                  x={cx}
+                  y={rect.y + 56}
+                  textAnchor="middle"
+                >
+                  {zone.sub}
+                </text>
+              </g>
+            );
+          })}
 
-          <g
-            className="qs-diagram-node"
-            style={{ "--diagram-delay": "0.5s" } as CSSProperties}
-          >
-            <rect
-              className={
-                highlightBlocked
-                  ? "qs-diagram-zone qs-diagram-zone-blocked"
-                  : "qs-diagram-zone"
-              }
-              x="232"
-              y="184"
-              width="180"
-              height="72"
-              rx="14"
-            />
-            <text
-              className="qs-diagram-zone-label"
-              x="322"
-              y="202"
-              textAnchor="middle"
-            >
-              Block
-            </text>
-            <text
-              className="qs-diagram-outcome"
-              x="322"
-              y="224"
-              textAnchor="middle"
-            >
-              {blockedTitle}
-            </text>
-            <text
-              className="qs-diagram-outcome-sub"
-              x="322"
-              y="240"
-              textAnchor="middle"
-            >
-              {blockedSub}
-            </text>
-          </g>
-
-          <g
-            className="qs-diagram-node"
-            style={{ "--diagram-delay": "0.58s" } as CSSProperties}
-          >
-            <rect
-              className={
-                highlightRaise
-                  ? "qs-diagram-zone qs-diagram-zone-raise"
-                  : "qs-diagram-zone"
-              }
-              x="446"
-              y="184"
-              width="180"
-              height="72"
-              rx="14"
-            />
-            <text
-              className="qs-diagram-zone-label"
-              x="536"
-              y="202"
-              textAnchor="middle"
-            >
-              Raise
-            </text>
-            <text
-              className="qs-diagram-outcome"
-              x="536"
-              y="224"
-              textAnchor="middle"
-            >
-              {raiseTitle}
-            </text>
-            <text
-              className="qs-diagram-outcome-sub"
-              x="536"
-              y="240"
-              textAnchor="middle"
-            >
-              {raiseSub}
-            </text>
-          </g>
-
-          <g
-            className="qs-diagram-chip"
-            style={{ "--diagram-delay": "0.62s" } as CSSProperties}
-          >
-            <rect
-              className="qs-diagram-chip-box"
-              x="48"
-              y="266"
-              width="120"
-              height="16"
-              rx="8"
-            />
-            <text
-              className="qs-diagram-chip-label"
-              x="108"
-              y="277"
-              textAnchor="middle"
-            >
-              1. Describe job
-            </text>
-          </g>
-          <g
-            className="qs-diagram-chip"
-            style={{ "--diagram-delay": "0.69s" } as CSSProperties}
-          >
-            <rect
-              className="qs-diagram-chip-box"
-              x="232"
-              y="266"
-              width="120"
-              height="16"
-              rx="8"
-            />
-            <text
-              className="qs-diagram-chip-label"
-              x="292"
-              y="277"
-              textAnchor="middle"
-            >
-              2. Approve seal
-            </text>
-          </g>
-          <g
-            className="qs-diagram-chip"
-            style={{ "--diagram-delay": "0.76s" } as CSSProperties}
-          >
-            <rect
-              className={
-                isDone && outcome && outcome.paidCount > 0
-                  ? "qs-diagram-chip-box qs-diagram-chip-box-ok"
-                  : "qs-diagram-chip-box"
-              }
-              x="416"
-              y="266"
-              width="160"
-              height="16"
-              rx="8"
-            />
-            <text
-              className="qs-diagram-chip-label"
-              x="496"
-              y="277"
-              textAnchor="middle"
-            >
-              3. Buy / Block / Raise
-            </text>
-          </g>
+          {CHIP.map((chip, index) => {
+            const cx = chip.x + chip.w / 2;
+            const chipOk =
+              index === 2 && isDone && Boolean(outcome && outcome.paidCount > 0);
+            return (
+              <g
+                key={chip.label}
+                className="qs-diagram-chip"
+                style={
+                  {
+                    "--diagram-delay": `${0.62 + index * 0.07}s`,
+                  } as CSSProperties
+                }
+              >
+                <rect
+                  className={
+                    chipOk
+                      ? "qs-diagram-chip-box qs-diagram-chip-box-ok"
+                      : "qs-diagram-chip-box"
+                  }
+                  x={chip.x}
+                  y={CHIP_Y}
+                  width={chip.w}
+                  height={CHIP_H}
+                  rx={8}
+                />
+                <text
+                  className="qs-diagram-chip-label"
+                  x={cx}
+                  y={CHIP_Y + 11}
+                  textAnchor="middle"
+                >
+                  {chip.label}
+                </text>
+              </g>
+            );
+          })}
         </svg>
       </div>
 

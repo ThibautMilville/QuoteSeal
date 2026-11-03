@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import {
   FlowDiagram,
   type FlowOutcome,
   type FlowPhase,
 } from "@/components/FlowDiagram";
+import { HelpWidget } from "@/components/HelpWidget";
 import { MandateChat } from "@/components/MandateChat";
 import { SiteFooter } from "@/components/SiteFooter";
 import { BrandGlowTitle } from "@/shared/ui/GlowTitle";
@@ -123,19 +125,33 @@ export function QuoteSealApp() {
         <section
           id="how"
           aria-labelledby="how-title"
-          className="qs-section scroll-mt-28"
+          className="qs-section relative scroll-mt-28 overflow-hidden"
         >
-          <p className="section-kicker m-0">How it works</p>
+          {/* Soft brand atmosphere - dark teal, no clutter */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-40 opacity-[0.35] sm:h-48"
+            aria-hidden
+          >
+            <Image
+              src="/qs-atmosphere.jpg"
+              alt=""
+              fill
+              sizes="(max-width: 1100px) 100vw, 1100px"
+              className="object-cover object-[50%_35%] [mask-image:linear-gradient(180deg,#000_0%,transparent_100%)]"
+              priority={false}
+            />
+          </div>
+          <p className="section-kicker relative m-0">How it works</p>
           <h2
             id="how-title"
-            className="m-0 mt-2 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
+            className="relative m-0 mt-2 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
           >
             From a sentence to sealed quote buys
           </h2>
-          <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
+          <p className="relative m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
             One clear job: describe, approve, buy under the seal.
           </p>
-          <ol className="qs-step-stagger m-0 mt-5 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
+          <ol className="qs-step-stagger relative m-0 mt-5 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
             {HOW_STEPS.map((step) => (
               <li
                 key={step.n}
@@ -249,6 +265,8 @@ export function QuoteSealApp() {
 
         <SiteFooter />
       </main>
+
+      <HelpWidget />
     </div>
   );
 }
