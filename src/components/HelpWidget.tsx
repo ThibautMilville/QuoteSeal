@@ -487,7 +487,7 @@ export function HelpWidget({ flowPhase = "idle" }: HelpWidgetProps) {
                 type="button"
                 disabled={pending}
                 onClick={() => {
-                  if (suggestion.includes("sample quote")) {
+                  if (suggestion.includes("sealed quote")) {
                     void ask(SAMPLE_QUOTE_HANDOFF);
                   } else {
                     void ask(suggestion);
