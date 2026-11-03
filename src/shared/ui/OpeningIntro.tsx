@@ -18,6 +18,7 @@ const HARD_MAX_MS = 8500;
 const NAME_SWEEP_MS = 1500;
 const TAGLINE_DELAY_MS = 320;
 const HOLD_MS = 560;
+const MARK_DELAY_MS = 90;
 
 type Phase = "checking" | "playing" | "exiting" | "done";
 
@@ -57,8 +58,8 @@ function isLowPowerDevice(): boolean {
 }
 
 /**
- * One brand mark: DOM QuoteSealMark stamps via CSS vars from Three.js;
- * canvas only runs the specular accent (no second 3D logo).
+ * Single brand path: 3D seal stamps, crossfades to one crisp SVG mark,
+ * then HTML name + tagline (no second mark, no canvas wordmark).
  */
 export function OpeningIntro({ children }: { children: ReactNode }) {
   const reducedMotion = useSyncExternalStore(
@@ -69,6 +70,7 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
   const [playPhase, setPhase] = useState<Exclude<Phase, "checking">>("playing");
   const phase: Phase =
     reducedMotion === null ? "checking" : reducedMotion ? "done" : playPhase;
+  const [markVisible, setMarkVisible] = useState(false);
   const [nameVisible, setNameVisible] = useState(false);
   const [taglineVisible, setTaglineVisible] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -121,12 +123,15 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Strict Mode remount: clear prior scene + HTML labels so nothing stacks.
     handleRef.current?.dispose();
     handleRef.current = null;
+    setMarkVisible(false);
     setNameVisible(false);
     setTaglineVisible(false);
 
     let cancelled = false;
+    let markTimer = 0;
     let taglineTimer = 0;
     let holdTimer = 0;
     const hardTimer = window.setTimeout(() => {
@@ -140,14 +145,18 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
         lowPower: isLowPowerDevice(),
         onReveal: () => {
           if (cancelled) return;
-          setNameVisible(true);
-          taglineTimer = window.setTimeout(() => {
+          markTimer = window.setTimeout(() => {
             if (cancelled) return;
-            setTaglineVisible(true);
-            holdTimer = window.setTimeout(() => {
-              if (!cancelled) complete();
-            }, NAME_SWEEP_MS + HOLD_MS);
-          }, TAGLINE_DELAY_MS);
+            setMarkVisible(true);
+            setNameVisible(true);
+            taglineTimer = window.setTimeout(() => {
+              if (cancelled) return;
+              setTaglineVisible(true);
+              holdTimer = window.setTimeout(() => {
+                if (!cancelled) complete();
+              }, NAME_SWEEP_MS + HOLD_MS);
+            }, TAGLINE_DELAY_MS);
+          }, MARK_DELAY_MS);
         },
         onComplete: () => {},
       });
@@ -158,6 +167,7 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
       window.clearTimeout(hardTimer);
+      window.clearTimeout(markTimer);
       window.clearTimeout(taglineTimer);
       window.clearTimeout(holdTimer);
       handleRef.current?.dispose();
@@ -212,7 +222,10 @@ export function OpeningIntro({ children }: { children: ReactNode }) {
           aria-label="QuoteSeal opening"
         >
           <canvas ref={canvasRef} className="qs-intro-canvas" />
-          <div className="qs-intro-mark is-live" aria-hidden>
+          <div
+            className={`qs-intro-mark ${markVisible ? "is-visible" : ""}`}
+            aria-hidden={!markVisible}
+          >
             <QuoteSealMark
               className="qs-intro-mark-svg"
               title=""
