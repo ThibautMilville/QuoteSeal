@@ -122,7 +122,16 @@ export function ForAgentsSection() {
         for quote buys - not an open wallet. Other agents POST here to compile a
         plan, approve a seal, then buy only under the cap. Humans use the chat
         above; agents use the same REST surface (and optional MCP) to get
-        buy / block / raise events without silent escalate.
+        buy / block / raise events without silent escalate. Default mode is{" "}
+        <span className="font-mono text-[0.78rem]">demo_local</span> (fixture
+        x402, no live Passport spend). See{" "}
+        <a
+          href="#kite"
+          className="text-[rgba(117,217,231,0.85)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+        >
+          Built for the Kite track
+        </a>{" "}
+        for identity / limits / payments mapping.
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">

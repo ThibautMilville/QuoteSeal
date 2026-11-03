@@ -62,19 +62,21 @@ Browser (Next.js UI)
 
 Open http://localhost:3010 after `npm run dev`, skip or watch the intro, then use a chip or type your own request.
 
-| Scenario | Intent | Typical result |
+| Scenario chip | Message intent | Typical result |
 | --- | --- | --- |
-| Boulogne · 40 m2 · 1 USDC / quote | Default demo | Entry + standard pay; premium (~1.5) blocked - raise ask |
-| Tighter seal · 0.5 USDC / quote | Lower per-quote cap | More blocks |
-| Wider seal · Paris · 2 USDC / quote | Higher per-quote cap | More quotes may pay |
+| Lyon · solar film · 1 USDC / quote | Default (40 m2, 3 USDC total) | Cheap + standard pay; **premium (~1.5) blocked** - raise ask |
+| Nantes · office paint · 0.5 USDC / quote | Tight per-quote cap | More blocks (standard/premium often refused) |
+| Paris · HVAC · 2 USDC / quote | Wide per-quote cap (5 USDC total) | Cheap + standard + **premium can all pay** |
 
-**Suggested walkthrough**
+**Suggested walkthrough (jury)**
 
-1. Click the default Boulogne scenario.
-2. Read the spending seal (total + max per quote).
+1. Chip **Lyon · solar film · 1 USDC / quote** (or type the same message).
+2. Read the spending seal (total + max per quote) - **limits** pillar.
 3. Click **Approve and buy**.
 4. See paid quotes, a blocked premium, and a raise ask - no silent escalate.
-5. Watch the **Product flow** section update in sync.
+5. Optional second run: chip **Paris · HVAC · 2 USDC / quote** so premium pays too.
+6. Scroll **Built for the Kite track** (`#kite`): identity optional, limits strong, payments = fixtures.
+7. Watch the **Product flow** diagram update in sync.
 
 ---
 
@@ -173,6 +175,16 @@ Health and kite routes report install / login state. The demo remains zero real 
 - **Track:** Kite (agent payments / Passport-shaped spending)
 - **Story:** sealed quote purchases with hard caps, local merchants, optional Passport wiring
 - **Non-goals:** custody, production payments, Amazon checkout, silent budget increases
+
+### Built for the Kite track (honest demo map)
+
+| Pillar (Kite) | What QuoteSeal shows | Caveat |
+| --- | --- | --- |
+| Verifiable identity | Optional `/api/kite/status` + session wiring; Passport is the identity rail | `demo_local` does **not** require a live Passport login |
+| User-defined permissions / spending limits | Spending **seal**: total + max per quote, pay-time refuse, raise needs new approval | Strongest pillar in this demo |
+| Agentic payments (shop / book / pay) | Local x402-shaped quote fixtures - buy / block / raise under the seal | Zero real spend on the public demo; Passport sandbox is opt-in |
+
+UI section: `#kite` on https://quoteseal.ozc.fr
 
 ---
 

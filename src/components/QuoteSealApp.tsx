@@ -28,6 +28,7 @@ const NAV_LINKS = [
   { href: "#chat", label: "Assistant" },
   { href: "#how", label: "How it works" },
   { href: "#flow", label: "Flow" },
+  { href: "#kite", label: "Kite track" },
   { href: "#faq", label: "FAQ" },
   { href: "#developers", label: "For developers" },
   { href: "#agents", label: "Agents" },
@@ -212,6 +213,70 @@ export function QuoteSealApp() {
               title="Sealed spending flow"
             />
           </div>
+        </section>
+
+        <section
+          id="kite"
+          aria-labelledby="kite-title"
+          className="qs-section scroll-mt-28"
+        >
+          <p className="section-kicker m-0">Kite track</p>
+          <h2
+            id="kite-title"
+            className="m-0 mt-2 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
+          >
+            Built for the Kite track
+          </h2>
+          <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
+            QuoteSeal maps the three Kite pillars honestly: what this{" "}
+            <span className="font-mono text-[0.78rem] text-[rgba(200,220,228,0.85)]">
+              demo_local
+            </span>{" "}
+            surface shows vs what Passport enables when you opt in.
+          </p>
+          <ol className="m-0 mt-5 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
+            <li className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
+              <p className="m-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(117,217,231,0.75)]">
+                01 · Identity
+              </p>
+              <h3 className="m-0 mt-2 text-[0.98rem] font-medium tracking-[-0.02em]">
+                Verifiable agent identity
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                Kite Passport is the identity rail. This public demo does not
+                require a live Passport login - health and{" "}
+                <span className="font-mono text-[0.72rem]">/api/kite/*</span>{" "}
+                report install state so you can wire sandbox later.
+              </p>
+            </li>
+            <li className="rounded-xl border border-[rgba(91,238,190,0.15)] bg-[rgba(91,238,190,0.03)] px-3.5 py-3.5">
+              <p className="m-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(91,238,190,0.75)]">
+                02 · Limits
+              </p>
+              <h3 className="m-0 mt-2 text-[0.98rem] font-medium tracking-[-0.02em]">
+                User-defined permissions
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                Strong here: you set total budget and max per quote, approve the
+                seal once, and pay-time code refuses anything above it. Raising
+                always needs a new approval - never a silent escalate.
+              </p>
+            </li>
+            <li className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
+              <p className="m-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(117,217,231,0.75)]">
+                03 · Payments
+              </p>
+              <h3 className="m-0 mt-2 text-[0.98rem] font-medium tracking-[-0.02em]">
+                Agentic pay for real tasks
+              </h3>
+              <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
+                Demo path uses local x402-shaped quote fixtures (buy / block /
+                raise with zero real spend). Kite Passport is how agentic shop /
+                book / pay can go live in sandbox - not claimed as live wallet
+                spend on this page.
+              </p>
+            </li>
+          </ol>
         </section>
 
         <section

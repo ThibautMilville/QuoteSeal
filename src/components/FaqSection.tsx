@@ -21,7 +21,12 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Is this real money? What about Kite Passport?",
     answer:
-      "This public demo spends zero real money. Quote fixtures are local x402 sample endpoints. Kite Passport is optional for hackathon / sandbox wiring - see health and the Agents section. Neither QuoteSeal nor SERV custodies funds or keys.",
+      "This public demo spends zero real money. Quote fixtures are local x402 sample endpoints. Kite Passport is optional for hackathon / sandbox wiring - see health, #kite, and the Agents section. Neither QuoteSeal nor SERV custodies funds or keys. We do not claim live Passport wallet spend on the default demo_local path.",
+  },
+  {
+    question: "How does QuoteSeal map to the Kite track?",
+    answer:
+      "Three pillars: (1) verifiable identity - Passport is the rail; demo_local does not require a live login, but /api/kite/* and health surface install state. (2) user-defined permissions and spending limits - the seal is the strong demo: total + max per quote, pay-time refuse, no silent raise. (3) agentic payments for real tasks - fixture x402 quote buys show the shop/pay loop under the seal; Passport enables sandbox spend when you opt in.",
   },
   {
     question: "How does Approve work?",
@@ -78,7 +83,7 @@ export function FaqSection() {
         Frequently asked questions
       </h2>
       <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-        Seal, SERV, demo money, agents, and hackathon wiring - short answers.
+        Seal, SERV, Kite track pillars, demo money, agents - short answers.
       </p>
 
       <ul className="m-0 mt-5 list-none divide-y divide-cyan-100/10 overflow-hidden rounded-xl border border-cyan-100/10 bg-white/[0.015] p-0">

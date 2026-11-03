@@ -41,9 +41,9 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
     },
   },
   {
-    pattern: /\bkite|passport|kpass\b/i,
+    pattern: /\bkite|passport|kpass|identity|permission\b/i,
     reply: {
-      text: "Kite Passport is optional. The demo runs without it. Live Passport rails stay off until you opt into a sandbox session yourself.",
+      text: "Built for the Kite track: identity via Passport (optional here - demo_local needs no login), hard spending limits via the seal (strong in this demo), and agentic quote payments via local x402 fixtures (zero real spend until you opt into sandbox). See the Kite track section on this page.",
     },
   },
   {
