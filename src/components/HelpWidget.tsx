@@ -11,31 +11,58 @@ import {
 import { answerHelp, QS_HELP_HANDOFF } from "@/shared/help/fallback";
 import { AssistantResponseSpinner } from "@/shared/ui/AssistantResponseSpinner";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+import type { FlowPhase } from "@/components/FlowDiagram";
 
 type HelpMessage =
   | { id: string; role: "user"; text: string }
   | { id: string; role: "agent"; text: string; handoff?: string };
 
-const SUGGESTIONS = [
-  "How does QuoteSeal work?",
-  "What is a spending seal?",
-  "Try a sample quote job",
-] as const;
+type TeaserPhase = "none" | "seal" | "done";
+
+const SUGGESTIONS: Record<TeaserPhase, string[]> = {
+  none: [
+    "How does QuoteSeal work?",
+    "What is a spending seal?",
+    "Try a sample quote job",
+  ],
+  seal: [
+    "What happens when I approve?",
+    "Why might a quote be blocked?",
+    "Is this real money?",
+  ],
+  done: [
+    "Why was a quote blocked?",
+    "How do I raise the seal?",
+    "Can agents call QuoteSeal?",
+  ],
+};
 
 const SAMPLE_QUOTE_HANDOFF =
   "40 m2 solar film in Lyon, 3 quotes, 3 USDC total, 1 USDC max each";
 
-const TEASERS = [
-  "Need a quick tip? Ask me about the seal.",
-  "Curious how buy / block / raise works?",
-] as const;
+const TEASERS: Record<TeaserPhase, string[]> = {
+  none: [
+    "Not sure where to start? Ask me about the seal.",
+    "Curious how buy / block / raise works?",
+  ],
+  seal: [
+    "Questions before you approve?",
+    "Ask me what the seal will allow.",
+  ],
+  done: [
+    "Want to know why a quote was blocked?",
+    "Ask me how to raise the seal.",
+  ],
+};
 
 const TEASER_FIRST_DELAY_MS = 7000;
-const TEASER_INTERVAL_MS = 32000;
+const TEASER_INTERVAL_MS = 30000;
 const TEASER_VISIBLE_MS = 5500;
 const TEASER_MAX_DISMISSALS = 2;
 const TEASER_DISMISSED_KEY = "qs-help-teaser-dismissed";
 const HELP_OPENED_KEY = "qs-help-opened";
+const MOBILE_MAX_WIDTH = 639;
+const AVOID_SELECTOR = "[data-agent-avoid]";
 
 const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
@@ -71,6 +98,16 @@ function introChromeReady(): boolean {
   return document.documentElement.classList.contains("qs-intro-chrome-ready");
 }
 
+function isMobileViewport(): boolean {
+  return window.innerWidth <= MOBILE_MAX_WIDTH;
+}
+
+function phaseOf(flowPhase: FlowPhase): TeaserPhase {
+  if (flowPhase === "seal" || flowPhase === "buy") return "seal";
+  if (flowPhase === "done") return "done";
+  return "none";
+}
+
 function handoffToMandate(message?: string) {
   window.dispatchEvent(
     new CustomEvent(QS_HELP_HANDOFF, { detail: { message: message ?? "" } }),
@@ -79,13 +116,18 @@ function handoffToMandate(message?: string) {
   chat?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-export function HelpWidget() {
+type HelpWidgetProps = {
+  flowPhase?: FlowPhase;
+};
+
+export function HelpWidget({ flowPhase = "idle" }: HelpWidgetProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<HelpMessage[]>([]);
   const [pending, setPending] = useState(false);
   const [teaser, setTeaser] = useState<string | null>(null);
   const [teaserVisible, setTeaserVisible] = useState(false);
+  const [avoidInView, setAvoidInView] = useState(false);
 
   const panelId = useId();
   const titleId = useId();
@@ -93,68 +135,170 @@ export function HelpWidget() {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
-  const teaserHideTimer = useRef(0);
-  const teaserCycleTimer = useRef(0);
+  const avoidInViewRef = useRef(false);
+  const flowPhaseRef = useRef(flowPhase);
   const teaserIndex = useRef(0);
+  const teaserTimersRef = useRef<number[]>([]);
+
+  const phase = phaseOf(flowPhase);
+  const suggestions = SUGGESTIONS[phase];
+
+  useEffect(() => {
+    flowPhaseRef.current = flowPhase;
+  }, [flowPhase]);
 
   const clearTeaserTimers = useCallback(() => {
-    window.clearTimeout(teaserHideTimer.current);
-    window.clearTimeout(teaserCycleTimer.current);
+    teaserTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    teaserTimersRef.current = [];
   }, []);
 
-  const showTeaser = useCallback(
-    (text: string) => {
-      if (teaserStopped() || !introChromeReady()) return;
-      setTeaser(text);
-      setTeaserVisible(true);
-      window.clearTimeout(teaserHideTimer.current);
-      teaserHideTimer.current = window.setTimeout(() => {
-        setTeaserVisible(false);
-      }, TEASER_VISIBLE_MS);
-    },
-    [],
-  );
-
-  const scheduleTeasers = useCallback(() => {
+  const hideTeaser = useCallback(() => {
     clearTeaserTimers();
-    if (teaserStopped()) return;
-
-    const tick = () => {
-      if (teaserStopped() || open) return;
-      const text = TEASERS[teaserIndex.current % TEASERS.length];
-      teaserIndex.current += 1;
-      showTeaser(text);
-      teaserCycleTimer.current = window.setTimeout(tick, TEASER_INTERVAL_MS);
-    };
-
-    teaserCycleTimer.current = window.setTimeout(tick, TEASER_FIRST_DELAY_MS);
-  }, [clearTeaserTimers, open, showTeaser]);
+    setTeaserVisible(false);
+    teaserTimersRef.current.push(
+      window.setTimeout(() => setTeaser(null), 320),
+    );
+  }, [clearTeaserTimers]);
 
   useEffect(() => {
     if (open) {
-      clearTeaserTimers();
-      setTeaserVisible(false);
+      hideTeaser();
       return;
     }
-    if (!introChromeReady()) {
-      const root = document.documentElement;
-      const obs = new MutationObserver(() => {
-        if (introChromeReady()) {
-          obs.disconnect();
-          scheduleTeasers();
-        }
+
+    const runCycle = () => {
+      if (teaserStopped() || document.visibilityState !== "visible") return;
+      if (!introChromeReady()) return;
+      if (avoidInViewRef.current) return;
+      const texts = TEASERS[phaseOf(flowPhaseRef.current)];
+      const text = texts[teaserIndex.current % texts.length];
+      teaserIndex.current += 1;
+      clearTeaserTimers();
+      setTeaser(text);
+      teaserTimersRef.current.push(
+        window.setTimeout(() => setTeaserVisible(true), 40),
+        window.setTimeout(() => {
+          setTeaserVisible(false);
+          teaserTimersRef.current.push(
+            window.setTimeout(() => setTeaser(null), 320),
+          );
+        }, TEASER_VISIBLE_MS),
+      );
+    };
+
+    let cancelled = false;
+    let first: number | undefined;
+    let interval: number | undefined;
+    let observer: MutationObserver | undefined;
+
+    const startCycles = () => {
+      if (cancelled || first != null) return;
+      first = window.setTimeout(() => {
+        runCycle();
+        interval = window.setInterval(runCycle, TEASER_INTERVAL_MS);
+      }, TEASER_FIRST_DELAY_MS);
+    };
+
+    if (introChromeReady()) {
+      startCycles();
+    } else {
+      observer = new MutationObserver(() => {
+        if (!introChromeReady()) return;
+        observer?.disconnect();
+        observer = undefined;
+        startCycles();
       });
-      obs.observe(root, { attributes: true, attributeFilter: ["class"] });
-      return () => obs.disconnect();
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
     }
-    scheduleTeasers();
-    return clearTeaserTimers;
-  }, [open, scheduleTeasers, clearTeaserTimers]);
+
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      if (first != null) window.clearTimeout(first);
+      if (interval) window.clearInterval(interval);
+      clearTeaserTimers();
+    };
+  }, [open, clearTeaserTimers, hideTeaser]);
+
+  // Hide teaser on mobile while the main composer (or other avoid zones) is on screen.
+  useEffect(() => {
+    const visible = new Set<Element>();
+    const update = () => {
+      const blocked = isMobileViewport() && visible.size > 0;
+      avoidInViewRef.current = blocked;
+      setAvoidInView(blocked);
+      if (blocked) {
+        setTeaserVisible(false);
+      }
+    };
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visible.add(entry.target);
+        else visible.delete(entry.target);
+      }
+      update();
+    });
+    const observed = new Set<Element>();
+    const scan = () => {
+      document.querySelectorAll(AVOID_SELECTOR).forEach((node) => {
+        if (observed.has(node)) return;
+        observed.add(node);
+        observer.observe(node);
+      });
+      for (const node of observed) {
+        if (!node.isConnected) {
+          observer.unobserve(node);
+          observed.delete(node);
+          visible.delete(node);
+        }
+      }
+      update();
+    };
+    scan();
+    const mutations = new MutationObserver(scan);
+    mutations.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // Lift the help panel above the on-screen keyboard.
+  useEffect(() => {
+    const panel = panelRef.current;
+    const viewport = window.visualViewport;
+    if (!open || !panel || !viewport) return;
+    const sync = () => {
+      const keyboard = Math.max(
+        0,
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      panel.style.setProperty("--qs-vvh", `${viewport.height}px`);
+      panel.style.setProperty("--qs-kb", `${keyboard}px`);
+    };
+    sync();
+    viewport.addEventListener("resize", sync);
+    viewport.addEventListener("scroll", sync);
+    return () => {
+      viewport.removeEventListener("resize", sync);
+      viewport.removeEventListener("scroll", sync);
+      panel.style.removeProperty("--qs-vvh");
+      panel.style.removeProperty("--qs-kb");
+    };
+  }, [open]);
 
   const dismissTeaser = useCallback(() => {
     setTeaserVisible(false);
     const next = Number(readSession(TEASER_DISMISSED_KEY) ?? "0") + 1;
     writeSession(TEASER_DISMISSED_KEY, String(next));
+    teaserTimersRef.current.push(
+      window.setTimeout(() => setTeaser(null), 320),
+    );
     if (next >= TEASER_MAX_DISMISSALS) clearTeaserTimers();
   }, [clearTeaserTimers]);
 
@@ -166,6 +310,7 @@ export function HelpWidget() {
   const openPanel = useCallback(() => {
     writeSession(HELP_OPENED_KEY, "1");
     setTeaserVisible(false);
+    setTeaser(null);
     setOpen(true);
   }, []);
 
@@ -208,32 +353,34 @@ export function HelpWidget() {
     }
   };
 
-  const ask = useCallback(async (raw: string) => {
-    const text = raw.trim();
-    if (!text || pending) return;
-    setInput("");
-    setMessages((prev) => [...prev, { id: uid("u"), role: "user", text }]);
-    setPending(true);
-    await new Promise((r) => window.setTimeout(r, 180));
-    const reply = answerHelp(text);
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: uid("a"),
-        role: "agent",
-        text: reply.text,
-        handoff: reply.handoff,
-      },
-    ]);
-    setPending(false);
-    if (reply.handoff !== undefined && reply.handoff.length > 0) {
-      // Quote-job handoff: close FAB and fill main chat.
-      window.setTimeout(() => {
-        closePanel();
-        handoffToMandate(reply.handoff);
-      }, 450);
-    }
-  }, [pending, closePanel]);
+  const ask = useCallback(
+    async (raw: string) => {
+      const text = raw.trim();
+      if (!text || pending) return;
+      setInput("");
+      setMessages((prev) => [...prev, { id: uid("u"), role: "user", text }]);
+      setPending(true);
+      await new Promise((r) => window.setTimeout(r, 180));
+      const reply = answerHelp(text);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid("a"),
+          role: "agent",
+          text: reply.text,
+          handoff: reply.handoff,
+        },
+      ]);
+      setPending(false);
+      if (reply.handoff !== undefined && reply.handoff.length > 0) {
+        window.setTimeout(() => {
+          closePanel();
+          handoffToMandate(reply.handoff);
+        }, 450);
+      }
+    },
+    [pending, closePanel],
+  );
 
   return (
     <div className="qs-agent-root">
@@ -272,7 +419,7 @@ export function HelpWidget() {
             type="button"
             onClick={closePanel}
             aria-label="Close help"
-            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+            className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-lg p-1.5 text-slate-400 transition-colors touch-manipulation hover:bg-white/10 hover:text-white"
           >
             <svg className="h-4 w-4" viewBox="0 0 14 14" fill="none" aria-hidden>
               <path
@@ -316,7 +463,7 @@ export function HelpWidget() {
                       closePanel();
                       handoffToMandate(msg.handoff);
                     }}
-                    className="mt-2 inline-flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-emerald-200/30 bg-emerald-200/[0.1] px-3 py-1.5 text-left text-[0.76rem] text-emerald-100 transition-[filter] hover:brightness-110"
+                    className="mt-2 inline-flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-emerald-200/30 bg-emerald-200/[0.1] px-3 py-1.5 text-left text-[0.76rem] text-emerald-100 transition-[filter] touch-manipulation hover:brightness-110"
                   >
                     Open main assistant
                   </button>
@@ -334,7 +481,7 @@ export function HelpWidget() {
 
         <div className="shrink-0 border-t border-emerald-200/10 px-4 py-3">
           <div className="mb-2 flex flex-wrap gap-1.5">
-            {SUGGESTIONS.map((suggestion) => (
+            {suggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
@@ -346,7 +493,7 @@ export function HelpWidget() {
                     void ask(suggestion);
                   }
                 }}
-                className="min-h-8 max-w-full cursor-pointer break-words rounded-full border border-emerald-200/15 bg-white/[0.03] px-2.5 py-1 text-[0.72rem] text-slate-300 transition-[border-color,color] hover:border-emerald-200/30 hover:text-white disabled:opacity-50"
+                className="min-h-9 max-w-full cursor-pointer break-words rounded-full border border-emerald-200/15 bg-white/[0.03] px-2.5 py-1.5 text-[0.72rem] text-slate-300 transition-[border-color,color] touch-manipulation hover:border-emerald-200/30 hover:text-white disabled:opacity-50"
               >
                 {suggestion}
               </button>
@@ -373,12 +520,12 @@ export function HelpWidget() {
               maxLength={400}
               placeholder="Ask a question, or describe a quote job…"
               aria-label="Ask QuoteSeal"
-              className="box-border h-10 min-h-10 min-w-0 flex-1 resize-none overflow-hidden rounded-xl border border-emerald-200/15 bg-black/25 px-3 py-2 text-sm leading-snug text-[#f5fbfd] outline-none transition-[border-color] placeholder:text-slate-600 focus:border-emerald-200/35"
+              className="box-border h-11 min-h-11 min-w-0 flex-1 resize-none overflow-hidden rounded-xl border border-emerald-200/15 bg-black/25 px-3 py-2.5 text-sm leading-snug text-[#f5fbfd] outline-none transition-[border-color] placeholder:text-slate-600 focus:border-emerald-200/35"
             />
             <button
               type="submit"
               disabled={pending || !input.trim()}
-              className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-emerald-200/30 bg-emerald-200/[0.12] px-3.5 text-[0.8rem] font-medium text-emerald-100 transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-emerald-200/30 bg-emerald-200/[0.12] px-3.5 text-[0.8rem] font-medium text-emerald-100 transition-[filter,opacity] touch-manipulation hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Send
             </button>
@@ -386,7 +533,7 @@ export function HelpWidget() {
         </div>
       </div>
 
-      {teaser && !open ? (
+      {teaser && !open && !avoidInView ? (
         <div
           className={`qs-agent-teaser ${teaserVisible ? "is-visible" : ""}`}
           role="status"

@@ -7,6 +7,7 @@ import {
   type FlowOutcome,
   type FlowPhase,
 } from "@/components/FlowDiagram";
+import { FaqSection } from "@/components/FaqSection";
 import { ForAgentsSection } from "@/components/ForAgentsSection";
 import { HelpWidget } from "@/components/HelpWidget";
 import { MandateChat } from "@/components/MandateChat";
@@ -27,6 +28,7 @@ const NAV_LINKS = [
   { href: "#chat", label: "Assistant" },
   { href: "#how", label: "How it works" },
   { href: "#flow", label: "Flow" },
+  { href: "#faq", label: "FAQ" },
   { href: "#developers", label: "For developers" },
   { href: "#agents", label: "Agents" },
 ] as const;
@@ -99,16 +101,16 @@ export function QuoteSealApp() {
         homeHref="#top"
       />
 
-      <main className="qs-page-enter mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-5 px-3 pb-16 pt-24 sm:gap-6 sm:px-4 sm:pt-28 md:px-6">
+      <main className="qs-page-enter mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-5 px-3 pb-28 pt-24 sm:gap-6 sm:px-4 sm:pb-24 sm:pt-28 md:px-6">
         <header className="relative min-w-0">
           <p className="section-kicker m-0">Sealed quote buys</p>
           <div className="mt-3 flex min-w-0 items-center gap-3 sm:gap-4">
             <QuoteSealMark className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" />
-            <h1 className="m-0 min-w-0 text-[clamp(1.85rem,7vw,3.4rem)] font-semibold leading-[0.98] tracking-[-0.04em]">
+            <h1 className="m-0 min-w-0 text-[clamp(1.7rem,7.2vw,3.4rem)] font-semibold leading-[0.98] tracking-[-0.04em]">
               <BrandGlowTitle lead="Quote" accent="Seal" />
             </h1>
           </div>
-          <p className="mt-3 max-w-2xl text-[0.95rem] leading-snug text-[var(--muted)] sm:text-[1.02rem]">
+          <p className="mt-3 max-w-2xl text-[0.92rem] leading-snug text-[var(--muted)] sm:text-[1.02rem]">
             Any job, any city, any budget. Tell the assistant what quotes you
             need, approve a spending seal, and buys stay inside the cap -
             anything above is blocked. No real money moves in this demo.
@@ -116,15 +118,15 @@ export function QuoteSealApp() {
           <div className="mt-4 flex flex-wrap gap-3">
             <a
               href="#chat"
-              className="qs-btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold"
+              className="qs-btn-primary inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold touch-manipulation"
             >
               Start chatting
             </a>
             <a
-              href="#flow"
-              className="qs-btn-secondary rounded-xl px-4 py-2.5 text-sm font-semibold"
+              href="#faq"
+              className="qs-btn-secondary inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold touch-manipulation"
             >
-              See the flow
+              Read the FAQ
             </a>
           </div>
         </header>
@@ -280,16 +282,16 @@ export function QuoteSealApp() {
           </div>
 
           <div className="mt-4 grid gap-2.5 lg:grid-cols-2">
-            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+            <pre className="m-0 max-h-40 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-2.5 font-mono text-[0.64rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all sm:max-h-44 sm:p-3 sm:text-[0.68rem]">
               {HEALTH_CURL}
             </pre>
-            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+            <pre className="m-0 max-h-40 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-2.5 font-mono text-[0.64rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all sm:max-h-44 sm:p-3 sm:text-[0.68rem]">
               {MANDATE_CURL}
             </pre>
-            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+            <pre className="m-0 max-h-40 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-2.5 font-mono text-[0.64rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all sm:max-h-44 sm:p-3 sm:text-[0.68rem]">
               {RUN_CURL}
             </pre>
-            <pre className="m-0 max-h-44 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-3 font-mono text-[0.68rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all">
+            <pre className="m-0 max-h-40 overflow-auto rounded-xl border border-[rgba(117,217,231,0.1)] bg-[#020b10]/70 p-2.5 font-mono text-[0.64rem] leading-relaxed text-[rgba(200,220,228,0.88)] whitespace-pre-wrap break-all sm:max-h-44 sm:p-3 sm:text-[0.68rem]">
               {X402_CURL}
             </pre>
           </div>
@@ -297,10 +299,12 @@ export function QuoteSealApp() {
 
         <ForAgentsSection />
 
+        <FaqSection />
+
         <SiteFooter />
       </main>
 
-      <HelpWidget />
+      <HelpWidget flowPhase={flowPhase} />
     </div>
   );
 }

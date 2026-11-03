@@ -308,7 +308,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
               type="button"
               disabled={busy !== null}
               onClick={() => void submitText(s.message)}
-              className="qs-chip rounded-lg px-3 py-1.5 text-left text-[0.78rem] disabled:opacity-50"
+              className="qs-chip min-h-10 rounded-lg px-3 py-2 text-left text-[0.76rem] touch-manipulation disabled:opacity-50 sm:text-[0.78rem]"
             >
               {s.label}
             </button>
@@ -344,7 +344,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
                     type="button"
                     disabled={busy !== null}
                     onClick={() => void approveAndRun()}
-                    className={`qs-btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-50 ${
+                    className={`qs-btn-primary inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold touch-manipulation disabled:opacity-50 ${
                       busy === null ? "qs-seal-pulse" : ""
                     }`}
                   >
@@ -362,7 +362,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
                         text: "No problem - send a new request whenever you are ready.",
                       });
                     }}
-                    className="qs-btn-secondary rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
+                    className="qs-btn-secondary inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold touch-manipulation disabled:opacity-50"
                   >
                     Edit request
                   </button>
@@ -428,6 +428,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
 
       <form
         onSubmit={onSubmit}
+        data-agent-avoid
         className="shrink-0 border-t border-[var(--line)] bg-[rgba(2,9,13,0.45)] px-3 py-3 sm:px-4"
       >
         <label className="sr-only" htmlFor="qs-chat-input">

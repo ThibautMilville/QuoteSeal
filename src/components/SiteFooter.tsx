@@ -25,31 +25,37 @@ export function SiteFooter() {
           aria-label="Footer"
         >
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="#chat"
           >
             Assistant
           </a>
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="#how"
           >
             How it works
           </a>
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
+            href="#faq"
+          >
+            FAQ
+          </a>
+          <a
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="#developers"
           >
             For developers
           </a>
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="#agents"
           >
             Agents
           </a>
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="/openapi.yaml"
             target="_blank"
             rel="noopener noreferrer"
@@ -57,7 +63,7 @@ export function SiteFooter() {
             OpenAPI
           </a>
           <a
-            className="text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+            className="inline-flex min-h-10 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
             href="https://github.com/ThibautMilville/QuoteSeal"
             target="_blank"
             rel="noopener noreferrer"

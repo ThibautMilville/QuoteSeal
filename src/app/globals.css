@@ -98,6 +98,31 @@ body::before {
   background: rgba(91, 238, 190, 0.58);
 }
 
+/* FAQ / collapsible panels - fade + height */
+.how-it-works-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.how-it-works-collapse.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.how-it-works-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .animated-gradient-word {
   display: inline;
   color: #9af0d6;
@@ -250,7 +275,7 @@ body::before {
   background: rgba(6, 23, 30, 0.8);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(16px);
-  padding: 1rem;
+  padding: 0.85rem;
 }
 
 #chat.qs-section {
@@ -1281,6 +1306,10 @@ body.qs-intro-active {
   transition-delay: 0s;
 }
 
+/*
+ * Help panel: fixed height; --qs-vvh / --qs-kb from visualViewport while open
+ * so the composer stays above the on-screen keyboard.
+ */
 .qs-agent-panel {
   position: fixed;
   z-index: 9001;
@@ -1289,8 +1318,8 @@ body.qs-intro-active {
   overscroll-behavior: contain;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: min(78dvh, calc(100dvh - 0.75rem));
+  bottom: var(--qs-kb, 0px);
+  height: min(78dvh, calc(var(--qs-vvh, 100dvh) - 0.75rem));
   padding-bottom: env(safe-area-inset-bottom);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -1343,6 +1372,21 @@ body.qs-intro-active {
   }
 }
 
+/* Landscape phones: keep FAB visible, panel beside it */
+@media (max-height: 500px) and (orientation: landscape) {
+  .qs-agent-panel {
+    left: auto;
+    right: calc(max(1rem, env(safe-area-inset-right)) + 4.5rem);
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    width: min(420px, calc(100vw - 6rem));
+    height: calc(var(--qs-vvh, 100dvh) - 1rem);
+    padding-bottom: 0;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    transform-origin: bottom right;
+  }
+}
+
 html:not(.qs-intro-chrome-ready) .qs-agent-root {
   display: none !important;
 }
@@ -1371,8 +1415,13 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
   .qs-diagram-pulse,
   .qs-agent-launcher:not(.is-open) .qs-agent-launcher-icon,
   .qs-agent-launcher:not(.is-open) .qs-agent-launcher-ring,
-  .qs-placeholder-caret {
+  .qs-placeholder-caret,
+  .how-it-works-collapse {
     animation: none !important;
+  }
+
+  .how-it-works-collapse {
+    transition: none;
   }
 
   .qs-intro-name.is-visible .qs-intro-name-text {

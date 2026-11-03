@@ -51,16 +51,26 @@ export function parseMandateFallback(message: string): Mandate {
   const text = message.trim() || DEFAULT_MANDATE_MESSAGE;
 
   const area = num(text.match(/(\d+(?:[.,]\d+)?)\s*m[²2]/i), base.areaM2);
+  // Prefer "3 USDC total" before "total … N USDC" so ", 3 USDC total, 1 USDC max"
+  // does not steal the per-quote amount as the session total.
   const maxTotal = num(
-    text.match(/(?:budget|total)[^\d]{0,20}(\d+(?:[.,]\d+)?)\s*usdc/i) ??
-      text.match(/(\d+(?:[.,]\d+)?)\s*usdc[^\n]{0,24}(?:total|session|budget)/i),
+    text.match(
+      /(\d+(?:[.,]\d+)?)\s*usdc[^\n]{0,24}(?:total|session|budget)/i,
+    ) ??
+      text.match(
+        /(?:total\s+budget|session\s+budget|budget|total(?:\s+cap)?)[^\d]{0,12}(\d+(?:[.,]\d+)?)\s*usdc/i,
+      ),
     base.maxTotalAmount,
   );
   const maxPerTx = num(
     text.match(
-      /(?:max|plafond)[^\d]{0,24}(\d+(?:[.,]\d+)?)\s*usdc[^\n]{0,24}(?:per|par|\/)\s*(?:quote|devis|tx)/i,
+      /(?:max|plafond)\s+(\d+(?:[.,]\d+)?)\s*usdc(?:\s*(?:per|par|\/)\s*(?:quote|devis|tx)|\s*each)?/i,
     ) ??
-      text.match(/(\d+(?:[.,]\d+)?)\s*usdc[^\n]{0,16}(?:per|par)\s*(?:quote|devis)/i),
+      text.match(
+        /(\d+(?:[.,]\d+)?)\s*usdc\s+(?:per|par)\s+(?:quote|devis|tx)/i,
+      ) ??
+      text.match(/(\d+(?:[.,]\d+)?)\s*usdc\s+max\s*(?:each|per)/i) ??
+      text.match(/(\d+(?:[.,]\d+)?)\s*usdc\s+each\b/i),
     base.maxAmountPerTx,
   );
   const maxQuotes = Math.min(
@@ -68,7 +78,14 @@ export function parseMandateFallback(message: string): Mandate {
     Math.max(
       1,
       Math.round(
-        num(text.match(/(\d+)\s*(?:quotes?|devis)/i), base.maxQuotes),
+        num(
+          text.match(/(\d+)\s*(?:quotes?|devis)/i) ??
+            text.match(
+              /(\d+)\s+(?:[\wÀ-ÿ\-']+\s+){0,5}(?:quotes?|devis)/i,
+            ) ??
+            text.match(/(?:up to|get|buy)\s+(\d+)\b/i),
+          base.maxQuotes,
+        ),
       ),
     ),
   );
