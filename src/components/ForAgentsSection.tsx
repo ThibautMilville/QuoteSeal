@@ -122,16 +122,16 @@ export function ForAgentsSection() {
         for quote buys - not an open wallet. Other agents POST here to compile a
         plan, approve a seal, then buy only under the cap. Humans use the chat
         above; agents use the same REST surface (and optional MCP) to get
-        buy / block / raise events without silent escalate. Default mode is{" "}
-        <span className="font-mono text-[0.78rem]">demo_local</span> (fixture
-        x402, no live Passport spend). See{" "}
+        buy / block / raise events without silent escalate. Passport identity
+        lives under{" "}
+        <span className="font-mono text-[0.78rem]">/api/kite/*</span>. See{" "}
         <a
           href="#kite"
           className="text-[rgba(117,217,231,0.85)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
         >
-          Built for the Kite track
+          Identity
         </a>{" "}
-        for identity / limits / payments mapping.
+        for live agent status and session create.
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -214,7 +214,7 @@ export function ForAgentsSection() {
           label="Run curl"
         />
         <CopyBlock
-          title="curl: x402 quote fixtures"
+          title="curl: quote network"
           subtitle="/api/x402/quote/{cheap|standard|premium}"
           code={X402_CURL}
           label="x402 curl"

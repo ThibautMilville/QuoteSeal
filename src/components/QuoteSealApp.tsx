@@ -11,6 +11,7 @@ import { FaqSection } from "@/components/FaqSection";
 import { ForAgentsSection } from "@/components/ForAgentsSection";
 import { HelpWidget } from "@/components/HelpWidget";
 import { MandateChat } from "@/components/MandateChat";
+import { PassportIdentity } from "@/components/PassportIdentity";
 import { SiteFooter } from "@/components/SiteFooter";
 import {
   HEALTH_CURL,
@@ -28,7 +29,7 @@ const NAV_LINKS = [
   { href: "#chat", label: "Assistant" },
   { href: "#how", label: "How it works" },
   { href: "#flow", label: "Flow" },
-  { href: "#kite", label: "Kite track" },
+  { href: "#kite", label: "Identity" },
   { href: "#faq", label: "FAQ" },
   { href: "#developers", label: "For developers" },
   { href: "#agents", label: "Agents" },
@@ -76,9 +77,14 @@ export function QuoteSealApp() {
     fetch("/api/health")
       .then(async (res) => {
         if (!res.ok) throw new Error("health failed");
-        const data = (await res.json()) as { ok?: boolean };
+        const data = (await res.json()) as {
+          ok?: boolean;
+          kite?: { canCreateSession?: boolean; agentId?: string | null };
+        };
         if (cancelled) return;
-        if (data.ok) {
+        if (data.ok && data.kite?.canCreateSession) {
+          setStatus({ tone: "ok", label: "Passport" });
+        } else if (data.ok) {
           setStatus({ tone: "ok", label: "Ready" });
         } else {
           setStatus({ tone: "warn", label: "Limited" });
@@ -115,7 +121,7 @@ export function QuoteSealApp() {
           <p className="mt-3 max-w-2xl text-[0.92rem] leading-snug text-[var(--muted)] sm:text-[1.02rem]">
             Any job, any city, any budget. Tell the assistant what quotes you
             need, approve a spending seal, and buys stay inside the cap -
-            anything above is blocked. No real money moves in this demo.
+            anything above is blocked.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <a
@@ -221,20 +227,18 @@ export function QuoteSealApp() {
           aria-labelledby="kite-title"
           className="qs-section scroll-mt-28"
         >
-          <p className="section-kicker m-0">Kite track</p>
+          <p className="section-kicker m-0">Kite · Passport</p>
           <h2
             id="kite-title"
             className="m-0 mt-2 text-lg font-semibold tracking-[-0.02em] sm:text-xl"
           >
-            Built for the Kite track
+            Identity is part of the product
           </h2>
           <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-            QuoteSeal maps the three Kite pillars honestly: what this{" "}
-            <span className="font-mono text-[0.78rem] text-[rgba(200,220,228,0.85)]">
-              demo_local
-            </span>{" "}
-            surface shows vs what Passport enables when you opt in.
+            QuoteSeal runs sealed spends under hard caps, with Kite Passport as
+            the verifiable agent identity rail when available on the host.
           </p>
+          <PassportIdentity />
           <ol className="m-0 mt-5 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
             <li className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
               <p className="m-0 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(117,217,231,0.75)]">
@@ -244,10 +248,11 @@ export function QuoteSealApp() {
                 Verifiable agent identity
               </h3>
               <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                Kite Passport is the identity rail. This public demo does not
-                require a live Passport login - health and{" "}
-                <span className="font-mono text-[0.72rem]">/api/kite/*</span>{" "}
-                report install state so you can wire sandbox later.
+                Status from{" "}
+                <span className="font-mono text-[0.72rem]">/api/kite/status</span>{" "}
+                surfaces agent id, login, and session. Approve can request a
+                Passport spending session with passkey approval when the host is
+                connected.
               </p>
             </li>
             <li className="rounded-xl border border-[rgba(91,238,190,0.15)] bg-[rgba(91,238,190,0.03)] px-3.5 py-3.5">
@@ -258,9 +263,9 @@ export function QuoteSealApp() {
                 User-defined permissions
               </h3>
               <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                Strong here: you set total budget and max per quote, approve the
-                seal once, and pay-time code refuses anything above it. Raising
-                always needs a new approval - never a silent escalate.
+                You set total budget and max per quote, approve the seal once,
+                and pay-time code refuses anything above it. Raising always needs
+                a new approval - never a silent escalate.
               </p>
             </li>
             <li className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
@@ -268,13 +273,12 @@ export function QuoteSealApp() {
                 03 · Payments
               </p>
               <h3 className="m-0 mt-2 text-[0.98rem] font-medium tracking-[-0.02em]">
-                Agentic pay for real tasks
+                Sealed quote network
               </h3>
               <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                Demo path uses local x402-shaped quote fixtures (buy / block /
-                raise with zero real spend). Kite Passport is how agentic shop /
-                book / pay can go live in sandbox - not claimed as live wallet
-                spend on this page.
+                Buys run against the quote network under the seal (buy / block /
+                raise). When Passport is connected, Approve also opens a spending
+                session for passkey confirmation.
               </p>
             </li>
           </ol>
@@ -312,17 +316,17 @@ export function QuoteSealApp() {
                 Sealed run
               </h3>
               <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                POST /api/run approves the session and buys sample local quotes
-                under the seal. Overspend is refused at pay time.
+                POST /api/run approves the sealed session and buys quote-network
+                offers under the seal. Overspend is refused at pay time.
               </p>
             </article>
             <article className="rounded-xl border border-[rgba(117,217,231,0.1)] bg-white/[0.02] px-3.5 py-3.5">
               <h3 className="m-0 text-[0.98rem] font-medium tracking-[-0.02em] text-[var(--accent)]">
-                Health + fixtures
+                Health + identity
               </h3>
               <p className="m-0 mt-1.5 text-[0.8rem] leading-snug text-[var(--muted)]">
-                GET /api/health and /api/x402/quote/{"{tier}"}. Kite Passport is
-                optional - demo stays zero-spend unless you opt into sandbox.
+                GET /api/health, /api/kite/status, and /api/x402/quote/{"{tier}"}.
+                Passport identity and session create live under /api/kite/*.
               </p>
             </article>
           </div>

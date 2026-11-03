@@ -215,6 +215,42 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
     emitFlow("buy");
     push({ role: "user", text: "Approve and buy quotes" });
     try {
+      // Prefer Passport spending session when the host can create one.
+      // Otherwise continue on the sealed local rail - no "demo" wording.
+      let passportNote: string | null = null;
+      try {
+        const kiteStatusRes = await fetch("/api/kite/status", {
+          cache: "no-store",
+        });
+        if (kiteStatusRes.ok) {
+          const kiteStatus = (await kiteStatusRes.json()) as {
+            canCreateSession?: boolean;
+          };
+          if (kiteStatus.canCreateSession) {
+            const sessionRes = await fetch("/api/kite/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                taskSummary: `QuoteSeal: ${plan.mandate.job} in ${plan.mandate.city}`,
+                maxAmountPerTx: plan.session.maxAmountPerTx,
+                maxTotalAmount: plan.session.maxTotalAmount,
+                ttlHours: plan.session.ttlHours,
+              }),
+            });
+            if (sessionRes.ok) {
+              const sessionData = (await sessionRes.json()) as {
+                approvalUrl?: string | null;
+              };
+              passportNote = sessionData.approvalUrl
+                ? `Passport session ready - approve with your passkey: ${sessionData.approvalUrl}`
+                : "Passport session requested - approve with your passkey if prompted, then sealed buys continue.";
+            }
+          }
+        }
+      } catch {
+        /* sealed local rail */
+      }
+
       const res = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -233,9 +269,12 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
         blockedCount,
         raiseAsked,
       });
+      const lines = passportNote
+        ? [passportNote, "", ...summary.lines]
+        : summary.lines;
       push({
         role: "assistant",
-        text: summary.lines.join("\n"),
+        text: lines.join("\n"),
         run: data,
         paid: summary.paid,
       });
@@ -481,7 +520,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
           id="qs-chat-hint"
           className="m-0 mt-2 font-mono text-[0.65rem] tracking-[0.06em] text-[var(--muted)]"
         >
-          Enter to send · Shift+Enter for a new line · no real money in this demo
+          Enter to send · Shift+Enter for a new line · pay only under the seal
         </p>
       </form>
     </section>

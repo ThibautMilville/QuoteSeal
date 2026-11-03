@@ -25,7 +25,7 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
   {
     pattern: /\bmoney|real|paid|usdc|payment|charge\b/i,
     reply: {
-      text: "This demo does not move real money. Local fixtures return sample quotes under the seal so you can see buy, block, and raise without spending.",
+      text: "Safety note: quote-network buys on this host do not move real funds unless you approve a Passport spending session. The seal still enforces buy, block, and raise under your caps.",
     },
   },
   {
@@ -43,7 +43,7 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
   {
     pattern: /\bkite|passport|kpass|identity|permission\b/i,
     reply: {
-      text: "Built for the Kite track: identity via Passport (optional here - demo_local needs no login), hard spending limits via the seal (strong in this demo), and agentic quote payments via local x402 fixtures (zero real spend until you opt into sandbox). See the Kite track section on this page.",
+      text: "Passport is the identity rail: the Identity section shows agent id and session status from /api/kite/status. Approve can create a Passport spending session when the host is connected. The seal always enforces hard caps. See #kite.",
     },
   },
   {
@@ -62,7 +62,7 @@ const FAQ: { pattern: RegExp; reply: HelpReply }[] = [
   {
     pattern: /\bboulogne\b/i,
     reply: {
-      text: "Boulogne was only an early demo city. QuoteSeal works for any job and city - try Lyon solar film, Nantes painting, or Paris HVAC from the chips above.",
+      text: "QuoteSeal works for any job and city - try Lyon solar film, Nantes painting, or Paris HVAC from the chips above.",
       handoff: "",
     },
   },

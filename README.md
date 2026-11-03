@@ -17,15 +17,15 @@ Agents that can pay need hard caps. QuoteSeal turns a plain-English request into
 
 ![Paid quotes + blocked premium + raise ask](./docs/screenshots/paid-blocked.png)
 
-## Built for the Kite track (honest map)
+## Built for the Kite track
 
-Three Kite pillars - what this demo shows, and what it does **not** claim:
+| Pillar | What QuoteSeal shows |
+| --- | --- |
+| Verifiable identity | `/api/kite/status` + `/api/kite/session`; UI Identity section; Approve can open a Passport passkey session when `kpass` is connected |
+| User-defined permissions / spending limits | Spending **seal**: total + max per quote, pay-time refuse, raise needs new approval |
+| Agentic payments (shop / book / pay) | Sealed buys against the quote network - buy / block / raise under the seal |
 
-| Pillar | What QuoteSeal shows | Caveat |
-| --- | --- | --- |
-| Verifiable identity | Optional `/api/kite/status` + `/api/kite/session`; Passport is the identity rail | Default path is `demo_local` - **no live Passport login required** |
-| User-defined permissions / spending limits | Spending **seal**: total + max per quote, pay-time refuse, raise needs new approval | Strongest pillar in this demo |
-| Agentic payments (shop / book / pay) | Local x402-shaped quote fixtures - buy / block / raise under the seal | **Zero real spend** on the public demo; Passport sandbox is opt-in |
+**Safety note (judges):** quote-network fixtures do not move real funds unless a Passport spending session is explicitly approved. Hosts without `kpass` (e.g. public Dokploy) still expose published agent identity via env and fall back to a sealed local session.
 
 UI section: `#kite` on the live site.
 
@@ -37,7 +37,7 @@ UI section: `#kite` on the live site.
 | --- | --- | --- |
 | Mandate compile | **SERV** (or local parser) | Free text → typed `MandatePlan` (caps, plan steps, rationale) |
 | Seal approval | **Human** | Nothing spends until Approve |
-| Session create | **Code** | `demo_local` session with the approved caps |
+| Session create | **Code** (+ Passport when connected) | Sealed session with the approved caps; optional Passport passkey session |
 | Pay-time check | **Code** (authoritative) | Per-quote + total caps; overspend → `quote_blocked` |
 | Raise copy | **SERV** (optional) | Phrasing for a higher cap ask - never unlocks payment alone |
 | Safety | **Code** | SERV cannot override a block or silently raise the seal |

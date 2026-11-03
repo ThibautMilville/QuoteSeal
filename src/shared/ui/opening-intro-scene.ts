@@ -23,6 +23,7 @@ const BUILD_END = 0.72;
 const LIFT_START = 0.7;
 const LIFT_END = 0.86;
 const LABEL_AT = 0.76;
+const CRISP_AT = 0.82;
 const LIFT_RATIO = 0.07;
 
 function clamp01(v: number) {
@@ -64,19 +65,19 @@ function createRingGeometry(lowPower: boolean) {
     bevelEnabled: true,
     bevelThickness: 0.04,
     bevelSize: 0.03,
-    bevelSegments: lowPower ? 1 : 3,
-    curveSegments: lowPower ? 32 : 64,
+    bevelSegments: lowPower ? 2 : 4,
+    curveSegments: lowPower ? 48 : 96,
   });
   geo.translate(0, 0, -depth / 2);
   return geo;
 }
 
-function createDiscGeometry() {
-  return new THREE.CircleGeometry(RING_R * 0.68, 48);
+function createDiscGeometry(lowPower: boolean) {
+  return new THREE.CircleGeometry(RING_R * 0.68, lowPower ? 64 : 96);
 }
 
 function createEnvMap() {
-  const size = 64;
+  const size = 128;
   const data = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -97,6 +98,9 @@ function createEnvMap() {
   tex.needsUpdate = true;
   tex.mapping = THREE.EquirectangularReflectionMapping;
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
   return tex;
 }
 
@@ -120,19 +124,22 @@ function setOpacity(material: THREE.MeshStandardMaterial, opacity: number) {
 
 /**
  * QuoteSeal emblem only: wax-seal ring drops and stamps, specular sweep,
- * then lifts so the HTML wordmark can appear underneath (no canvas text).
+ * then lifts and crossfades to a crisp DOM SVG mark (no canvas wordmark).
  */
 export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   const { canvas, durationMs, onComplete, onReveal, lowPower = false } = options;
 
+  const dprCap = lowPower ? 1.75 : 3;
+  const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: !lowPower,
+    antialias: true,
     alpha: true,
     powerPreference: lowPower ? "low-power" : "high-performance",
   });
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 1.75));
+  renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
@@ -164,19 +171,24 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   const ringMat = createMetal(EMERALD, 0.28, 0x0d3f3a);
   stampPivot.add(new THREE.Mesh(ringGeo, ringMat));
 
-  const discGeo = createDiscGeometry();
+  const discGeo = createDiscGeometry(lowPower);
   const discMat = createMetal(INK, 0.45, 0x0a1620);
   const disc = new THREE.Mesh(discGeo, discMat);
   disc.position.z = 0.02;
   stampPivot.add(disc);
 
-  const beadGeo = new THREE.TorusGeometry(RING_R * 0.9, 0.035, 8, lowPower ? 48 : 96);
+  const beadGeo = new THREE.TorusGeometry(
+    RING_R * 0.9,
+    0.035,
+    lowPower ? 12 : 16,
+    lowPower ? 64 : 128,
+  );
   const beadMat = createMetal(GOLD, 0.35, 0x4a3808);
   const bead = new THREE.Mesh(beadGeo, beadMat);
   bead.rotation.x = Math.PI / 2;
   stampPivot.add(bead);
 
-  const coreGeo = new THREE.CircleGeometry(RING_R * 0.28, 32);
+  const coreGeo = new THREE.CircleGeometry(RING_R * 0.28, lowPower ? 48 : 64);
   const coreMat = createMetal(EMERALD_LIGHT, 0.2, 0x2fa98f);
   const core = new THREE.Mesh(coreGeo, coreMat);
   core.position.z = 0.05;
@@ -222,6 +234,8 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
   sweep.visible = false;
   root.add(sweep);
 
+  const materials = [ringMat, discMat, beadMat, coreMat];
+
   const resize = () => {
     const parent = canvas.parentElement;
     const w = parent?.clientWidth || window.innerWidth;
@@ -233,13 +247,18 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
     const fitWidth = (RING_R * 2.6) / 0.62 / aspect;
     baseCameraZ.value = Math.max(fitHeight, fitWidth) / 2 / halfTan;
     camera.updateProjectionMatrix();
+    // false = keep CSS size; backing store = CSS * DPR
     renderer.setSize(w, h, false);
 
     const visibleHeight = 2 * baseCameraZ.value * halfTan;
     liftWorld.value = visibleHeight * LIFT_RATIO;
     const bottomWorld = -RING_R - 0.08 + liftWorld.value;
     const bottomPx = h / 2 - (bottomWorld / (visibleHeight / 2)) * (h / 2);
+    const sealCenterY = h / 2 - (liftWorld.value / (visibleHeight / 2)) * (h / 2);
+    const sealPx = ((RING_R * 2.15) / visibleHeight) * h;
     parent?.style.setProperty("--qs-intro-label-top", `${Math.round(bottomPx)}px`);
+    parent?.style.setProperty("--qs-intro-seal-top", `${Math.round(sealCenterY)}px`);
+    parent?.style.setProperty("--qs-intro-seal-size", `${Math.round(sealPx)}px`);
   };
   resize();
   window.addEventListener("resize", resize);
@@ -260,10 +279,19 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
     const b = clamp01(t / BUILD_END);
 
     const dropT = segment(b, 0, 0.42);
-    setOpacity(ringMat, easeOutCubic(Math.min(1, dropT / 0.35)));
-    setOpacity(discMat, easeOutCubic(Math.min(1, dropT / 0.4)));
-    setOpacity(beadMat, easeOutCubic(Math.min(1, dropT / 0.45)));
-    setOpacity(coreMat, easeOutCubic(Math.min(1, dropT / 0.5)));
+    const baseOpacity = {
+      ring: easeOutCubic(Math.min(1, dropT / 0.35)),
+      disc: easeOutCubic(Math.min(1, dropT / 0.4)),
+      bead: easeOutCubic(Math.min(1, dropT / 0.45)),
+      core: easeOutCubic(Math.min(1, dropT / 0.5)),
+    };
+
+    // Crossfade 3D seal out once the crisp DOM mark takes over.
+    const fade3d = 1 - easeInOutCubic(segment(t, CRISP_AT, Math.min(1, CRISP_AT + 0.12)));
+    setOpacity(ringMat, baseOpacity.ring * fade3d);
+    setOpacity(discMat, baseOpacity.disc * fade3d);
+    setOpacity(beadMat, baseOpacity.bead * fade3d);
+    setOpacity(coreMat, baseOpacity.core * fade3d);
 
     stampPivot.position.y = mix(1.8, 0, easeOutCubic(dropT));
     stampPivot.scale.setScalar(mix(0.55, 1, easeOutBackSoft(dropT)));
@@ -282,7 +310,7 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
     const sweepT = segment(b, 0.62, 0.86);
     sweepUniforms.uProgress.value = mix(-1.6, 1.6, easeInOutCubic(sweepT));
     sweepUniforms.uOpacity.value =
-      sweepT > 0 && sweepT < 1 ? Math.sin(sweepT * Math.PI) * 0.9 : 0;
+      sweepT > 0 && sweepT < 1 ? Math.sin(sweepT * Math.PI) * 0.9 * fade3d : 0;
     sweep.visible = sweepUniforms.uOpacity.value > 0.01;
 
     const liftT = easeInOutCubic(segment(t, LIFT_START, LIFT_END));
@@ -318,10 +346,7 @@ export function mountIntroScene(options: IntroSceneOptions): IntroSceneHandle {
       beadGeo.dispose();
       coreGeo.dispose();
       sweepGeo.dispose();
-      ringMat.dispose();
-      discMat.dispose();
-      beadMat.dispose();
-      coreMat.dispose();
+      for (const mat of materials) mat.dispose();
       sweepMat.dispose();
       envMap.dispose();
       renderer.dispose();

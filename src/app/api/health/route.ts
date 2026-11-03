@@ -11,6 +11,7 @@ export async function GET() {
     app: "quote-seal",
     track: "kite",
     mode: kite.modeHint,
+    rail: kite.rail,
     serv: modelPolicyHealth(),
     kite: {
       installed: kite.installed,
@@ -19,6 +20,15 @@ export async function GET() {
       loggedIn: kite.loggedIn,
       agentRegistered: kite.agentRegistered,
       sessionActive: kite.sessionActive,
+      canCreateSession: kite.canCreateSession,
+      identitySource: kite.identitySource,
+      agentId: kite.agentId,
+      agentLabel: kite.agentLabel,
+      agentType: kite.agentType,
+      userEmail: kite.userEmail,
+      sessionId: kite.sessionId,
+      rail: kite.rail,
+      connectUrl: kite.connectUrl,
       nextCommand: kite.nextCommand,
       error: kite.error,
     },
@@ -29,6 +39,6 @@ export async function GET() {
       priceUsdc: q.priceUsdc,
       path: `/api/x402/quote/${q.tier}`,
     })),
-    note: "Zero real spend in this demo. Merchant names/EUR heuristics resolve from mandate.job (solar film, paint, HVAC, generic). Seal USDC tiers stay fixed. Optional SERV_API_KEY enables live intent compile.",
+    note: "Safety: quote-network fixtures do not move real funds unless a Passport session is explicitly approved.",
   });
 }

@@ -40,11 +40,10 @@ export function SiteFooter() {
             seal, and buys stay inside the cap.
           </p>
           <p className="m-0 mt-2.5 font-mono text-[0.68rem] leading-relaxed text-[var(--muted)]">
-            &copy; 2026 QuoteSeal - no real money - no custody - demo quotes
-            only
+            &copy; 2026 QuoteSeal - no custody - pay only under the seal
           </p>
           <p className="m-0 mt-1 font-mono text-[0.68rem] leading-relaxed text-[var(--muted)]">
-            SERV Hackathon - Kite track
+            Kite Passport identity · sealed quote network
           </p>
         </div>
 
@@ -95,7 +94,7 @@ export function SiteFooter() {
               className="inline-flex min-h-9 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"
               href="#kite"
             >
-              Kite track
+              Identity
             </a>
             <a
               className="inline-flex min-h-9 items-center text-[var(--muted)] transition-colors touch-manipulation hover:text-[var(--accent)]"

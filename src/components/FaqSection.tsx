@@ -11,27 +11,27 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "What is QuoteSeal?",
     answer:
-      "A sealed quote-buying demo for any job and any city. You describe the work, approve a hard spending seal (total budget and max per quote), then sample quotes are bought under that cap. Anything above the seal is blocked - raising the limit always needs a new approval.",
+      "A sealed quote-buying product for any job and any city. You describe the work, approve a hard spending seal (total budget and max per quote), then quotes are bought under that cap. Anything above the seal is blocked - raising the limit always needs a new approval.",
   },
   {
     question: "What is SERV Reasoning, and how is it different from the seal?",
     answer:
-      "The seal is deterministic code: per-quote and total caps checked at pay time, never silently raised. SERV Reasoning (OpenServ) is optional judgment for turning free-text into a mandate plan and for raise-ask copy when a quote would exceed the seal. If SERV_API_KEY is unset, a local parser keeps demos reproducible. Rules stay in code; SERV does not override a block.",
+      "The seal is deterministic code: per-quote and total caps checked at pay time, never silently raised. SERV Reasoning (OpenServ) is optional judgment for turning free-text into a mandate plan and for raise-ask copy when a quote would exceed the seal. If SERV_API_KEY is unset, a local parser keeps plans reproducible. Rules stay in code; SERV does not override a block.",
   },
   {
     question: "Is this real money? What about Kite Passport?",
     answer:
-      "This public demo spends zero real money. Quote fixtures are local x402 sample endpoints. Kite Passport is optional for hackathon / sandbox wiring - see health, #kite, and the Agents section. Neither QuoteSeal nor SERV custodies funds or keys. We do not claim live Passport wallet spend on the default demo_local path.",
+      "Safety note: quote-network offers on this host do not move real funds unless you explicitly approve a Passport spending session. Kite Passport is the identity and session rail - see #kite for live agent status. Neither QuoteSeal nor SERV custodies funds or keys.",
   },
   {
     question: "How does QuoteSeal map to the Kite track?",
     answer:
-      "Three pillars: (1) verifiable identity - Passport is the rail; demo_local does not require a live login, but /api/kite/* and health surface install state. (2) user-defined permissions and spending limits - the seal is the strong demo: total + max per quote, pay-time refuse, no silent raise. (3) agentic payments for real tasks - fixture x402 quote buys show the shop/pay loop under the seal; Passport enables sandbox spend when you opt in.",
+      "Three pillars: (1) verifiable identity - Passport agent id and session status via /api/kite/* and the Identity section. (2) user-defined permissions - the seal enforces total + max per quote at pay time, no silent raise. (3) agentic payments - sealed buys against the quote network; Approve can open a Passport session when the host is connected.",
   },
   {
     question: "How does Approve work?",
     answer:
-      "After the assistant compiles your request into a plain-English seal, nothing is spent until you click Approve and buy. That creates a short-lived session with the same per-quote and total caps. Each subsequent buy is checked against that session at pay time.",
+      "After the assistant compiles your request into a plain-English seal, nothing is spent until you click Approve and buy. That creates a short-lived sealed session with the same per-quote and total caps. When Passport is connected on the host, Approve also requests a Passport spending session and can show a passkey approval link. Each subsequent buy is checked against the seal at pay time.",
   },
   {
     question: "Why was a quote blocked?",
@@ -41,17 +41,17 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "What jobs and cities are supported?",
     answer:
-      "Any job, any city in the product copy. Merchant names and EUR heuristics resolve from the job type (solar film, paint, HVAC, or generic local trade). Seal USDC prices stay fixed so demos stay predictable: cheap 0.3, standard 0.8, premium 1.5.",
+      "Any job, any city. Merchant names and EUR heuristics resolve from the job type (solar film, paint, HVAC, or generic local trade). Seal USDC prices stay fixed for predictable sealed runs: cheap 0.3, standard 0.8, premium 1.5.",
   },
   {
     question: "Can other agents call QuoteSeal?",
     answer:
-      "Yes. See For developers (#developers) and For agents (#agents): OpenAPI at /openapi.yaml documents GET /api/health, POST /api/mandate, POST /api/run, and the x402 quote fixtures. Optional MCP: npm run mcp with QUOTESEAL_BASE_URL. No API auth today; treat this as a demo surface.",
+      "Yes. See For developers (#developers) and For agents (#agents): OpenAPI at /openapi.yaml documents GET /api/health, POST /api/mandate, POST /api/run, /api/kite/*, and the quote network. Optional MCP: npm run mcp with QUOTESEAL_BASE_URL.",
   },
   {
-    question: "What is the MCP / hackathon path?",
+    question: "What is the MCP / integrator path?",
     answer:
-      "Agents can compile a mandate, show the seal to a human, then run sealed buys. Prefer the live base URL https://quoteseal.ozc.fr. Use demo_local mode unless you explicitly opt into Kite sandbox. OpenAPI and the Agents section include ready-to-copy curls and Cursor MCP config.",
+      "Agents can compile a mandate, show the seal to a human, then run sealed buys. Prefer the live base URL https://quoteseal.ozc.fr. OpenAPI and the Agents section include ready-to-copy curls and Cursor MCP config.",
   },
   {
     question: "Where does the left tip bubble near the chat button come from?",
@@ -61,7 +61,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Is this financial or purchasing advice?",
     answer:
-      "No. QuoteSeal is a spending-seal demo for quote buys under a hard cap, not a recommendation of vendors, prices, or contracts. Review every plan before you approve.",
+      "No. QuoteSeal is a spending-seal product for quote buys under a hard cap, not a recommendation of vendors, prices, or contracts. Review every plan before you approve.",
   },
 ];
 
@@ -83,7 +83,7 @@ export function FaqSection() {
         Frequently asked questions
       </h2>
       <p className="m-0 mt-1.5 max-w-prose text-[0.85rem] leading-snug text-[var(--muted)]">
-        Seal, SERV, Kite track pillars, demo money, agents - short answers.
+        Seal, SERV, Passport identity, agents - short answers.
       </p>
 
       <ul className="m-0 mt-5 list-none divide-y divide-cyan-100/10 overflow-hidden rounded-xl border border-cyan-100/10 bg-white/[0.015] p-0">

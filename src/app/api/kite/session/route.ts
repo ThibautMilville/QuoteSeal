@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createKiteSessionRequest, getKiteStatus } from "@/shared/kite/cli";
+import {
+  createKiteSessionRequest,
+  extractApprovalUrl,
+  getKiteStatus,
+} from "@/shared/kite/cli";
 
 const BodySchema = z.object({
   taskSummary: z.string().min(1),
@@ -16,17 +20,21 @@ export async function POST(req: NextRequest) {
       {
         error: "kpass_not_installed",
         hint: status.nextCommand,
-        fallback: "demo_local",
+        fallback: "sealed",
+        rail: "sealed",
       },
       { status: 503 },
     );
   }
-  if (!status.loggedIn) {
+  if (!status.loggedIn || !status.canCreateSession) {
     return NextResponse.json(
       {
         error: "kite_not_logged_in",
-        hint: status.nextCommand ?? "kpass signup init --email you@example.com --output json",
-        fallback: "demo_local",
+        hint:
+          status.nextCommand ??
+          "kpass signup init --email you@example.com --output json",
+        fallback: "sealed",
+        rail: "sealed",
       },
       { status: 401 },
     );
@@ -43,14 +51,24 @@ export async function POST(req: NextRequest) {
   const result = await createKiteSessionRequest(body.data);
   if (!result.ok) {
     return NextResponse.json(
-      { error: "kite_session_failed", detail: result.error, fallback: "demo_local" },
+      {
+        error: "kite_session_failed",
+        detail: result.error,
+        fallback: "sealed",
+        rail: "sealed",
+      },
       { status: 502 },
     );
   }
 
+  const approvalUrl = extractApprovalUrl(result.data);
+
   return NextResponse.json({
     ok: true,
+    rail: "passport",
     mode: "kite_sandbox",
+    agentId: status.agentId,
+    approvalUrl,
     sessionRequest: result.data,
   });
 }

@@ -23,7 +23,7 @@ const SUGGESTIONS: Record<TeaserPhase, string[]> = {
   none: [
     "How does QuoteSeal work?",
     "What is a spending seal?",
-    "Try a sample quote job",
+    "Try a sealed quote job",
   ],
   seal: [
     "What happens when I approve?",
