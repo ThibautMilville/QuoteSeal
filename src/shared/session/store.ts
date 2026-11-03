@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 import type { Mandate, SessionProposal } from "@/shared/mandate/schema";
 
 export type SealedSession = {
@@ -157,8 +157,4 @@ export function recordPayment(
   if (session.spentTotal >= session.proposal.maxTotalAmount) {
     session.status = "exhausted";
   }
-}
-
-export function paymentFingerprint(token: string): string {
-  return createHash("sha256").update(token).digest("hex").slice(0, 12);
 }

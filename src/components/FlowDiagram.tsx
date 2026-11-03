@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  useId,
-  useSyncExternalStore,
-  type CSSProperties,
-} from "react";
+import { useId, type CSSProperties } from "react";
+import { useReducedMotion } from "@/shared/ui/useReducedMotion";
 
 export type FlowPhase =
   | "idle"
@@ -95,16 +92,6 @@ const EDGE_PAIRS: [StageId, StageId][] = [
   ["seal", "buy"],
 ];
 
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-
-function readReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 function center(rect: DiagramRect) {
   return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
 }
@@ -163,11 +150,7 @@ export function FlowDiagram({
   const gradId = `qs-diagram-grad-${uid}`;
   const glowId = `qs-diagram-glow-${uid}`;
   const hubId = `qs-diagram-hub-${uid}`;
-  const reduceMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    readReducedMotion,
-    () => true,
-  );
+  const reduceMotion = Boolean(useReducedMotion(true));
 
   const flowBusy = phase !== "idle" || !reduceMotion;
   const showPulses = flowBusy && !reduceMotion;

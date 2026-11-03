@@ -9,8 +9,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { answerHelp, QS_HELP_HANDOFF } from "@/shared/help/fallback";
-import { AssistantResponseSpinner } from "@/shared/ui/AssistantResponseSpinner";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+import { SealLoader } from "@/shared/ui/SealLoader";
 import type { FlowPhase } from "@/components/FlowDiagram";
 
 type HelpMessage =
@@ -474,7 +474,7 @@ export function HelpWidget({ flowPhase = "idle" }: HelpWidgetProps) {
 
           {pending ? (
             <div className="text-cyan-200/80">
-              <AssistantResponseSpinner label="Thinking…" />
+              <SealLoader label="Thinking…" />
             </div>
           ) : null}
         </div>

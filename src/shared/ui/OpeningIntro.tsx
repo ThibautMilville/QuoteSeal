@@ -5,11 +5,11 @@ import {
   useEffect,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { mountIntroScene, type IntroSceneHandle } from "@/shared/ui/opening-intro-scene";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+import { useReducedMotion } from "@/shared/ui/useReducedMotion";
 
 const INTRO_MS = 2400;
 const EXIT_MS = 400;
@@ -20,22 +20,6 @@ const TAGLINE_DELAY_MS = 100;
 const HOLD_MS = 320;
 
 type Phase = "checking" | "playing" | "exiting" | "done";
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const media = window.matchMedia(REDUCED_MOTION_QUERY);
-  media.addEventListener("change", onChange);
-  return () => media.removeEventListener("change", onChange);
-}
-
-function getReducedMotion(): boolean {
-  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
-
-function getServerReducedMotion(): boolean | null {
-  return null;
-}
 
 function isLowPowerDevice(): boolean {
   if (typeof window === "undefined") return true;
@@ -61,11 +45,7 @@ function isLowPowerDevice(): boolean {
  * Light slate/teal atmosphere behind the SVG - never a competing 3D glyph.
  */
 export function OpeningIntro({ children }: { children: ReactNode }) {
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotion,
-    getServerReducedMotion,
-  );
+  const reducedMotion = useReducedMotion(null);
   const [playPhase, setPhase] = useState<Exclude<Phase, "checking">>("playing");
   const phase: Phase =
     reducedMotion === null ? "checking" : reducedMotion ? "done" : playPhase;

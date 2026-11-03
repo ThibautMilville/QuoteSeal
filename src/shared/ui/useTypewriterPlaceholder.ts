@@ -1,22 +1,7 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-
-function getReducedMotion() {
-  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
-
-function getServerReducedMotion() {
-  return false;
-}
+import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/shared/ui/useReducedMotion";
 
 type Options = {
   examples: readonly string[];
@@ -40,11 +25,7 @@ export function useTypewriterPlaceholder({
   holdMs = 2200,
   gapMs = 480,
 }: Options): string {
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotion,
-    getServerReducedMotion,
-  );
+  const reducedMotion = useReducedMotion(false);
   const [text, setText] = useState("");
 
   useEffect(() => {

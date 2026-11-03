@@ -3,7 +3,7 @@ import { promisify } from "util";
 import { access } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
-import type { KiteIdentitySource, KiteStatus } from "@/shared/kite/types";
+import type { KiteStatus } from "@/shared/kite/types";
 
 export type { KiteIdentitySource, KiteStatus } from "@/shared/kite/types";
 

@@ -6,7 +6,6 @@ import {
   useId,
   useRef,
   useState,
-  useSyncExternalStore,
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
@@ -19,8 +18,9 @@ import {
   tierLabel,
 } from "@/shared/ui/chat-copy";
 import { QS_HELP_HANDOFF } from "@/shared/help/fallback";
-import { AssistantResponseSpinner } from "@/shared/ui/AssistantResponseSpinner";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
+import { SealLoader } from "@/shared/ui/SealLoader";
+import { useReducedMotion } from "@/shared/ui/useReducedMotion";
 import { useTypewriterPlaceholder } from "@/shared/ui/useTypewriterPlaceholder";
 import type { FlowOutcome, FlowPhase } from "@/components/FlowDiagram";
 
@@ -67,22 +67,6 @@ type ChatMessage = {
 const WELCOME =
   "Hi - tell me what quotes you need. Any job, any city: include the work, place, size, and your spending seal (total budget and max per quote).\n\nExample: “40 m2 solar film in Lyon, up to 3 quotes, 3 USDC total, 1 USDC max each.”";
 
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-
-function getReducedMotion() {
-  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
-
-function getServerReducedMotion() {
-  return false;
-}
-
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -106,11 +90,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
   const flowRef = useRef(onFlowChange);
   flowRef.current = onFlowChange;
 
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotion,
-    getServerReducedMotion,
-  );
+  const reducedMotion = useReducedMotion(false);
 
   /** Animate only while empty and unfocused so the real caret stays usable. */
   const animatePlaceholder =
@@ -457,7 +437,7 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
           <article className="qs-chat-row is-assistant">
             <QuoteSealMark className="mt-0.5 h-8 w-8 shrink-0 opacity-70" />
             <div className="qs-chat-bubble is-assistant">
-              <AssistantResponseSpinner label="Preparing your seal…" />
+              <SealLoader label="Preparing your seal…" />
             </div>
           </article>
         ) : null}

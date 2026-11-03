@@ -1040,7 +1040,7 @@ body.qs-intro-active {
   }
 }
 
-/* Chat pending spinner - Signafy / Kodza ring + dots, QuoteSeal tokens via currentColor */
+/* Chat pending spinner - SealLoader ring, QuoteSeal tokens via currentColor */
 .qs-assistant-spinner {
   --qs-spinner-size: 1.15em;
   --qs-spinner-stroke: 2.2;
@@ -1113,42 +1113,6 @@ body.qs-intro-active {
   }
 }
 
-.qs-assistant-spinner__dots {
-  display: flex;
-  align-items: center;
-  gap: 0.13em;
-}
-
-.qs-assistant-spinner__dots > span {
-  width: 0.22em;
-  height: 0.22em;
-  border-radius: 50%;
-  background: currentColor;
-  animation: qs-assistant-spinner-dot calc(1.1s * var(--qs-spinner-tempo))
-    cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-
-.qs-assistant-spinner__dots > span:nth-child(2) {
-  animation-delay: calc(0.14s * var(--qs-spinner-tempo));
-}
-
-.qs-assistant-spinner__dots > span:nth-child(3) {
-  animation-delay: calc(0.28s * var(--qs-spinner-tempo));
-}
-
-@keyframes qs-assistant-spinner-dot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.32;
-    transform: none;
-  }
-  28% {
-    opacity: 1;
-    transform: translateY(-0.26em);
-  }
-}
-
 .qs-assistant-spinner__label {
   font-size: 0.875rem;
   opacity: 0.72;
@@ -1156,18 +1120,12 @@ body.qs-intro-active {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .qs-assistant-spinner__ring,
-  .qs-assistant-spinner__dots > span {
+  .qs-assistant-spinner__ring {
     animation: none;
   }
 
   .qs-assistant-spinner__ring circle:last-child {
     stroke-dasharray: 30 100;
-  }
-
-  .qs-assistant-spinner__dots > span {
-    opacity: 0.7;
-    transform: none;
   }
 }
 
