@@ -11,13 +11,13 @@ import {
 import { mountIntroScene, type IntroSceneHandle } from "@/shared/ui/opening-intro-scene";
 import { QuoteSealMark } from "@/shared/ui/QuoteSealMark";
 
-const INTRO_MS = 4200;
-const EXIT_MS = 620;
-const HARD_MAX_MS = 8500;
-/** Matches `.qs-intro-name-text` sweep: 0.15s delay + 1.35s run */
-const NAME_SWEEP_MS = 1500;
-const TAGLINE_DELAY_MS = 320;
-const HOLD_MS = 560;
+const INTRO_MS = 4400;
+const EXIT_MS = 640;
+const HARD_MAX_MS = 9000;
+/** Matches `.qs-intro-name-text` sweep: 0.12s delay + 1.35s run */
+const NAME_SWEEP_MS = 1470;
+const TAGLINE_DELAY_MS = 280;
+const HOLD_MS = 520;
 
 type Phase = "checking" | "playing" | "exiting" | "done";
 

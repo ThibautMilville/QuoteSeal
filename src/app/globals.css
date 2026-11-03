@@ -508,9 +508,24 @@ body.qs-intro-active {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at 50% 48%, rgba(26, 107, 98, 0.22), transparent 42%),
-    #02090d;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    radial-gradient(ellipse 70% 55% at 50% 46%, rgba(26, 107, 98, 0.28), transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(6, 40, 48, 0.55), transparent 50%),
+    linear-gradient(180deg, #031016 0%, #02090d 48%, #010608 100%);
+  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qs-intro-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 48%,
+    transparent 28%,
+    rgba(1, 6, 8, 0.35) 72%,
+    rgba(1, 6, 8, 0.72) 100%
+  );
+  z-index: 0;
 }
 
 .qs-intro-overlay.is-exiting {
@@ -521,11 +536,12 @@ body.qs-intro-active {
 .qs-intro-canvas {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
   image-rendering: auto;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-overlay.is-exiting .qs-intro-canvas {
@@ -539,7 +555,7 @@ body.qs-intro-active {
   z-index: 1;
   width: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
   height: var(--qs-intro-seal-size, clamp(5.5rem, 16vw, 8.25rem));
-  transform: translate(-50%, -50%) scale(0.55) rotate(-40deg);
+  transform: translate(-50%, -50%) scale(0.42) rotate(-48deg);
   opacity: 0;
   pointer-events: none;
   filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
@@ -547,7 +563,7 @@ body.qs-intro-active {
 }
 
 .qs-intro-mark.is-stamping {
-  animation: qsIntroMarkStamp 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: qsIntroMarkStamp 1.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .qs-intro-mark-svg {
@@ -558,41 +574,42 @@ body.qs-intro-active {
   overflow: visible;
 }
 
+/* Beat 1: stamp impact then settle - one strong motion arc */
 @keyframes qsIntroMarkStamp {
   0% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 18vh)) scale(0.55) rotate(-220deg);
+    transform: translate(-50%, calc(-50% - 22vh)) scale(0.42) rotate(-240deg);
     filter: drop-shadow(0 0 0 rgba(90, 238, 190, 0));
   }
-  42% {
+  38% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06) rotate(0deg);
-    filter: drop-shadow(0 0 28px rgba(90, 238, 190, 0.45));
+    transform: translate(-50%, -50%) scale(1.1) rotate(4deg);
+    filter: drop-shadow(0 0 36px rgba(90, 238, 190, 0.55));
   }
-  58% {
-    transform: translate(-50%, -50%) scale(0.97) rotate(0deg);
-    filter: drop-shadow(0 0 18px rgba(90, 238, 190, 0.28));
+  52% {
+    transform: translate(-50%, -50%) scale(0.94) rotate(-1deg);
+    filter: drop-shadow(0 0 14px rgba(90, 238, 190, 0.22));
   }
-  78% {
-    transform: translate(-50%, -50%) scale(1.02) rotate(0deg);
-    filter: drop-shadow(0 0 32px rgba(90, 238, 190, 0.4));
+  72% {
+    transform: translate(-50%, -50%) scale(1.03) rotate(0deg);
+    filter: drop-shadow(0 0 30px rgba(90, 238, 190, 0.42));
   }
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
-    filter: drop-shadow(0 0 22px rgba(90, 238, 190, 0.32));
+    filter: drop-shadow(0 0 20px rgba(90, 238, 190, 0.3));
   }
 }
 
 .qs-intro-overlay.is-exiting .qs-intro-mark {
   animation: none;
   opacity: 0;
-  transform: translate(-50%, -56%) scale(1.04);
-  filter: drop-shadow(0 0 12px rgba(90, 238, 190, 0.15));
+  transform: translate(-50%, -58%) scale(1.06);
+  filter: drop-shadow(0 0 10px rgba(90, 238, 190, 0.12));
   transition:
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.45s ease;
+    opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.48s ease;
 }
 
 .qs-intro-copy {
@@ -603,7 +620,7 @@ body.qs-intro-active {
   z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 0.65rem;
+  gap: 0.7rem;
   pointer-events: none;
 }
 
@@ -613,12 +630,12 @@ body.qs-intro-active {
   font-size: clamp(1.9rem, 6vw, 3.4rem);
   line-height: 1.1;
   opacity: 0;
-  letter-spacing: 0.06em;
-  transform: translateY(0.55rem);
+  letter-spacing: 0.1em;
+  transform: translateY(0.7rem);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 1s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 1.05s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-name.is-visible {
@@ -653,7 +670,7 @@ body.qs-intro-active {
 }
 
 .qs-intro-name.is-visible .qs-intro-name-text {
-  animation: qsIntroNameSweep 1.35s cubic-bezier(0.45, 0, 0.25, 1) 0.15s both;
+  animation: qsIntroNameSweep 1.35s cubic-bezier(0.45, 0, 0.25, 1) 0.12s both;
 }
 
 .qs-intro-tagline {
@@ -662,14 +679,14 @@ body.qs-intro-active {
   text-align: center;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: clamp(0.7rem, 2.2vw, 0.82rem);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(138, 163, 173, 0.92);
   opacity: 0;
-  transform: translateY(0.45rem);
+  transform: translateY(0.5rem);
   transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-tagline.is-visible {
@@ -687,8 +704,11 @@ body.qs-intro-active {
 }
 
 .qs-intro-overlay.is-exiting .qs-intro-copy {
-  transform: translateY(-0.35rem);
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  transform: translateY(-0.45rem);
+  transition:
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .qs-intro-skip {
@@ -702,7 +722,7 @@ body.qs-intro-active {
   border: none;
   border-radius: 0;
   background: transparent;
-  color: rgba(226, 232, 240, 0.8);
+  color: rgba(226, 232, 240, 0.55);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
@@ -710,9 +730,10 @@ body.qs-intro-active {
   text-transform: uppercase;
   opacity: 0;
   touch-action: manipulation;
+  animation: qsIntroSkipIn 0.5s ease 1.1s forwards;
   transition:
-    opacity 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .qs-intro-skip:hover,
@@ -724,6 +745,15 @@ body.qs-intro-active {
 .qs-intro-skip:focus-visible {
   outline: 2px solid #6ee7b7;
   outline-offset: 2px;
+}
+
+@keyframes qsIntroSkipIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.72;
+  }
 }
 
 /* Flow diagram (CapitalRail-style schematic) */
@@ -1464,6 +1494,7 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
 @media (prefers-reduced-motion: reduce) {
   .qs-intro-mark.is-stamping,
   .qs-intro-name.is-visible .qs-intro-name-text,
+  .qs-intro-skip,
   .animated-gradient-word,
   .page-title-flow,
   .qs-page-enter,
@@ -1488,6 +1519,10 @@ html:not(.qs-intro-chrome-ready) [class*=" qs-agent-"] {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     filter: none;
+  }
+
+  .qs-intro-skip {
+    opacity: 0.72;
   }
 
   .how-it-works-collapse {
