@@ -1,5 +1,10 @@
 import type { MandatePlan } from "@/shared/mandate/schema";
 import type { RunEvent, RunResult } from "@/shared/run/execute";
+import {
+  categoryLabel,
+  resolveJobCategory,
+  resolveQuoteOffer,
+} from "@/shared/quotes/catalog";
 
 const TIER_LABEL: Record<string, string> = {
   cheap: "Entry",
@@ -19,11 +24,13 @@ export function formatUsdc(amount: number): string {
 /** Plain-English confirmation after /api/mandate. */
 export function describePlanForChat(plan: MandatePlan): string {
   const { mandate, session, plan: steps } = plan;
+  const category = resolveJobCategory(mandate.job);
+  const trade = categoryLabel(category);
   const list = steps
-    .map(
-      (step, i) =>
-        `${i + 1}. ${tierLabel(step.tier)} quote from a local merchant (~${formatUsdc(step.expectedPriceUsdc)})`,
-    )
+    .map((step, i) => {
+      const offer = resolveQuoteOffer(mandate.job, step.tier);
+      return `${i + 1}. ${tierLabel(step.tier)} quote from ${offer.vendor} (~${formatUsdc(step.expectedPriceUsdc)})`;
+    })
     .join("\n");
 
   return [
@@ -33,7 +40,7 @@ export function describePlanForChat(plan: MandatePlan): string {
     `- Up to ${formatUsdc(session.maxAmountPerTx)} per quote`,
     `- Up to ${formatUsdc(session.maxTotalAmount)} total`,
     `- Valid for ${session.ttlHours}h`,
-    `- Up to ${mandate.maxQuotes} quotes`,
+    `- Up to ${mandate.maxQuotes} ${trade} quotes`,
     ``,
     `Planned buys`,
     list,

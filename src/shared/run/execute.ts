@@ -1,5 +1,9 @@
 import type { MandatePlan } from "@/shared/mandate/schema";
-import { QUOTE_CATALOG, quotePath } from "@/shared/quotes/catalog";
+import {
+  estimateTotalEur,
+  quotePath,
+  resolveQuoteOffer,
+} from "@/shared/quotes/catalog";
 import { composeRaiseAsk } from "@/shared/serv/client";
 import {
   authorizePayment,
@@ -90,7 +94,7 @@ export async function executeSealedRun(
   for (const step of plan.plan) {
     const path = quotePath(step.tier);
     const url = absoluteUrl(origin, path);
-    const offer = QUOTE_CATALOG[step.tier];
+    const offer = resolveQuoteOffer(plan.mandate.job, step.tier);
 
     events.push({
       type: "quote_attempt",
@@ -153,13 +157,13 @@ export async function executeSealedRun(
 
     const quote = {
       vendor: offer.vendor,
+      mark: offer.mark,
+      category: offer.category,
       city: plan.mandate.city,
       job: plan.mandate.job,
       areaM2: plan.mandate.areaM2,
       pricePerM2: offer.pricePerM2,
-      estimatedTotalEur: Number(
-        (offer.pricePerM2 * plan.mandate.areaM2).toFixed(2),
-      ),
+      estimatedTotalEur: estimateTotalEur(offer, plan.mandate.areaM2),
       leadDays: offer.leadDays,
       exclusions: offer.exclusions,
       summary: offer.summary,

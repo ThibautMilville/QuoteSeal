@@ -25,9 +25,10 @@ export async function GET() {
     merchants: Object.values(QUOTE_CATALOG).map((q) => ({
       tier: q.tier,
       vendor: q.vendor,
+      category: q.category,
       priceUsdc: q.priceUsdc,
       path: `/api/x402/quote/${q.tier}`,
     })),
-    note: "Zero real spend in this demo. Optional SERV_API_KEY enables live intent compile. Kite sandbox needs Passport login later.",
+    note: "Zero real spend in this demo. Merchant names/EUR heuristics resolve from mandate.job (solar film, paint, HVAC, generic). Seal USDC tiers stay fixed. Optional SERV_API_KEY enables live intent compile.",
   });
 }

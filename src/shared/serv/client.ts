@@ -9,7 +9,7 @@ import {
   buildSessionProposal,
   parseMandateFallback,
 } from "@/shared/mandate/fallback";
-import { QUOTE_CATALOG } from "@/shared/quotes/catalog";
+import { SEAL_PRICES_USDC } from "@/shared/quotes/catalog";
 import {
   SERV_BASE_URL,
   hasServApiKey,
@@ -43,7 +43,7 @@ Return ONLY JSON with this shape:
 }
 Rules:
 - Prefer staying inside the user's stated USDC caps.
-- available merchants: cheap=${QUOTE_CATALOG.cheap.priceUsdc}, standard=${QUOTE_CATALOG.standard.priceUsdc}, premium=${QUOTE_CATALOG.premium.priceUsdc} USDC.
+- available seal prices: cheap=${SEAL_PRICES_USDC.cheap}, standard=${SEAL_PRICES_USDC.standard}, premium=${SEAL_PRICES_USDC.premium} USDC (vendor names are job-aware fixtures).
 - Do not invent other tiers.
 - Judgment only: code will rebuild the executable plan and session endpoints.`;
 

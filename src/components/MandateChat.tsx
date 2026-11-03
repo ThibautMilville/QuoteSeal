@@ -371,24 +371,43 @@ export function MandateChat({ onFlowChange }: MandateChatProps = {}) {
 
               {msg.paid && msg.paid.length > 0 ? (
                 <ul className="mt-3 grid list-none gap-2 p-0 sm:grid-cols-2">
-                  {msg.paid.map((q) => (
-                    <li
-                      key={`${q.tier}-${q.vendor}`}
-                      className="rounded-xl border border-[var(--line)] bg-[var(--panel-2)] p-3"
-                    >
-                      <p className="m-0 text-[0.72rem] font-mono uppercase tracking-wider text-[var(--accent)]">
-                        Paid · {tierLabel(q.tier)}
-                      </p>
-                      <h3 className="m-0 mt-1 text-sm font-semibold">{q.vendor}</h3>
-                      <p className="m-0 mt-1 text-[0.8rem] leading-snug text-[var(--muted)]">
-                        {String(q.quote.summary)}
-                      </p>
-                      <p className="m-0 mt-2 font-mono text-[0.68rem] text-[var(--foreground)]">
-                        {String(q.quote.estimatedTotalEur)} EUR est. ·{" "}
-                        {String(q.quote.leadDays)} days · {formatUsdc(q.amountUsdc)}
-                      </p>
-                    </li>
-                  ))}
+                  {msg.paid.map((q) => {
+                    const mark =
+                      typeof q.quote.mark === "string" && q.quote.mark
+                        ? q.quote.mark
+                        : q.vendor.slice(0, 2).toUpperCase();
+                    return (
+                      <li
+                        key={`${q.tier}-${q.vendor}`}
+                        className="rounded-xl border border-[var(--line)] bg-[var(--panel-2)] p-3"
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <span
+                            aria-hidden
+                            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[rgba(56,189,248,0.08)] font-mono text-[0.7rem] font-semibold tracking-wide text-[var(--accent)]"
+                          >
+                            {mark}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="m-0 text-[0.72rem] font-mono uppercase tracking-wider text-[var(--accent)]">
+                              Paid · {tierLabel(q.tier)}
+                            </p>
+                            <h3 className="m-0 mt-1 text-sm font-semibold">
+                              {q.vendor}
+                            </h3>
+                            <p className="m-0 mt-1 text-[0.8rem] leading-snug text-[var(--muted)]">
+                              {String(q.quote.summary)}
+                            </p>
+                            <p className="m-0 mt-2 font-mono text-[0.68rem] text-[var(--foreground)]">
+                              {String(q.quote.estimatedTotalEur)} EUR est. ·{" "}
+                              {String(q.quote.leadDays)} days ·{" "}
+                              {formatUsdc(q.amountUsdc)}
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : null}
             </div>

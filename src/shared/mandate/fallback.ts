@@ -6,7 +6,12 @@ import {
   type SessionProposal,
   defaultMandate,
 } from "@/shared/mandate/schema";
-import { QUOTE_CATALOG, quotePath, type QuoteTier } from "@/shared/quotes/catalog";
+import {
+  SEAL_PRICES_USDC,
+  quotePath,
+  resolveQuoteOffer,
+  type QuoteTier,
+} from "@/shared/quotes/catalog";
 
 function num(match: RegExpMatchArray | null, fallback: number): number {
   if (!match?.[1]) return fallback;
@@ -96,7 +101,7 @@ export function buildPlan(mandate: Mandate): {
   for (const tier of order) {
     if (plan.length >= mandate.maxQuotes) break;
     if (!mandate.preferredTiers.includes(tier)) continue;
-    const offer = QUOTE_CATALOG[tier];
+    const offer = resolveQuoteOffer(mandate.job, tier);
     plan.push({
       tier,
       expectedPriceUsdc: offer.priceUsdc,
@@ -110,7 +115,7 @@ export function buildPlan(mandate: Mandate): {
   if (plan.length === 0) {
     plan.push({
       tier: "cheap",
-      expectedPriceUsdc: QUOTE_CATALOG.cheap.priceUsdc,
+      expectedPriceUsdc: SEAL_PRICES_USDC.cheap,
       reason: "Start with the entry merchant.",
     });
   }
